@@ -1,0 +1,11 @@
+/Users/minidfx/Git/HonModManager/src/main/java/com/honmodmanager/controllers/ModDetailsController.java
+/Users/minidfx/Git/HonModManager/src/main/java/com/honmodmanager/services/contracts/ModManager.java
+/Users/minidfx/Git/HonModManager/src/main/java/com/honmodmanager/services/contracts/ModUpdater.java
+/Users/minidfx/Git/HonModManager/src/main/java/com/honmodmanager/controllers/contracts/FXmlController.java
+/Users/minidfx/Git/HonModManager/src/main/java/com/honmodmanager/models/contracts/Version.java
+/Users/minidfx/Git/HonModManager/src/main/java/com/honmodmanager/MainApp.java
+/Users/minidfx/Git/HonModManager/src/main/java/com/honmodmanager/services/contracts/ModReader.java
+/Users/minidfx/Git/HonModManager/src/main/java/com/honmodmanager/models/contracts/Mod.java
+/Users/minidfx/Git/HonModManager/src/main/java/com/honmodmanager/controllers/HomeController.java
+/Users/minidfx/Git/HonModManager/src/main/java/com/honmodmanager/controllers/LeftSideController.java
+/Users/minidfx/Git/HonModManager/src/main/java/com/honmodmanager/services/contracts/ModWriter.java

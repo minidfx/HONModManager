@@ -1,0 +1,11 @@
+com/honmodmanager/controllers/LeftSideController.class
+com/honmodmanager/services/contracts/ModWriter.class
+com/honmodmanager/models/contracts/Version.class
+com/honmodmanager/controllers/contracts/FXmlController.class
+com/honmodmanager/MainApp.class
+com/honmodmanager/services/contracts/ModManager.class
+com/honmodmanager/services/contracts/ModUpdater.class
+com/honmodmanager/controllers/HomeController.class
+com/honmodmanager/models/contracts/Mod.class
+com/honmodmanager/controllers/ModDetailsController.class
+com/honmodmanager/services/contracts/ModReader.class
