@@ -19,7 +19,7 @@ public interface FXmlController extends Initializable
     /**
      * Returns the controller associated to the view.
      *
-     * @param viewPath The relative path of the view.
+     * @param viewPath The absolute path of the view.
      * @return The view loaded.
      * @throws IOException
      */
