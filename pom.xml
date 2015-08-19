@@ -158,5 +158,10 @@
             <artifactId>maven-shade-plugin</artifactId>
             <version>1.4</version>
         </dependency>
+        <dependency>
+            <groupId>com.netflix.rxjava</groupId>
+            <artifactId>rxjava-async-util</artifactId>
+            <version>0.16.1</version>
+        </dependency>
     </dependencies>
 </project>

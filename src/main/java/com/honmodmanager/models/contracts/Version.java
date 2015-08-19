@@ -26,7 +26,7 @@ public interface Version
      *
      * @return
      */
-    int getHotFix();
+    int getFix();
 
     /**
      * Gets the build version,
