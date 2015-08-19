@@ -7,9 +7,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<SplitPane id="mainSplitPane" dividerPositions="0.3076923076923077" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<SplitPane id="mainSplitPane" dividerPositions="0.35714285714285715" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <items>
-        <BorderPane fx:id="leftPane" prefHeight="200.0" prefWidth="200.0" />
-        <BorderPane fx:id="centerPane" prefHeight="200.0" prefWidth="200.0" />
+        <BorderPane fx:id="leftPane" SplitPane.resizableWithParent="false" />
+        <BorderPane fx:id="centerPane">
+         <center>
+            <Label text="Please select a mod in the left menu" BorderPane.alignment="CENTER" />
+         </center></BorderPane>
     </items>
 </SplitPane>

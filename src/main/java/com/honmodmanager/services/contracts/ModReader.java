@@ -1,7 +1,7 @@
 package com.honmodmanager.services.contracts;
 
 import com.honmodmanager.models.contracts.Mod;
-import java.util.List;
+import rx.Observable;
 
 /**
  * Enables the class to read mods installed on Heroes of Newerth.
@@ -15,5 +15,5 @@ public interface ModReader
      *
      * @return Returns mods that need an update.
      */
-    List<Mod> getInstalledMods();
+    Observable<Mod> getInstalledMods();
 }

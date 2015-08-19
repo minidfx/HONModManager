@@ -14,7 +14,7 @@
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
     </rowConstraints>
     <children>
-        <ListView id="listView" />
-        <ProgressIndicator id="progressIndicator" centerShape="false" maxHeight="50.0" maxWidth="50.0" GridPane.halignment="CENTER" />
+        <ListView id="listView" fx:id="listMod" />
+        <ProgressIndicator id="progressIndicator" fx:id="progressIndicator" centerShape="false" maxHeight="50.0" maxWidth="50.0" opacity="0.5" GridPane.halignment="CENTER" />
     </children>
 </GridPane>

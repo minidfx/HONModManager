@@ -6,7 +6,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
-import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 
@@ -17,6 +17,16 @@ import javafx.fxml.Initializable;
  */
 public interface FXmlController extends Initializable
 {
+    /**
+     * Executes the Runnable lambda on JavaFX thread.
+     *
+     * @param execute
+     */
+    default void executeOnUIThread(Runnable execute)
+    {
+        Platform.runLater(execute);
+    }
+
     /**
      * Returns the controller associated to the view.
      *
