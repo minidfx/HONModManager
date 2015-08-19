@@ -43,4 +43,11 @@ public interface Mod
      * @return
      */
     URI getDownloadUri();
+
+    /**
+     * Determines whether the mod is applied on the game.
+     *
+     * @return
+     */
+    boolean isApplied();
 }

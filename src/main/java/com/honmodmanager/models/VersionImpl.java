@@ -2,7 +2,7 @@ package com.honmodmanager.models;
 
 import com.honmodmanager.models.contracts.Version;
 
-public class VersionImpl implements Version
+public final class VersionImpl implements Version
 {
     private final int major;
     private final int minor;
@@ -39,5 +39,11 @@ public class VersionImpl implements Version
     public int getBuild()
     {
         return this.build;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("%d.%d.%d.%d", this.major, this.minor, this.fix, this.build);
     }
 }

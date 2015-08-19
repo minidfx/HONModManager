@@ -15,5 +15,5 @@ public interface ModReader
      *
      * @return Returns mods that need an update.
      */
-    Observable<Mod> getInstalledMods();
+    Observable<Mod> getMods();
 }

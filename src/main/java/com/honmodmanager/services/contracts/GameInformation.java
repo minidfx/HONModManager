@@ -1,11 +1,13 @@
 package com.honmodmanager.services.contracts;
 
 import com.honmodmanager.models.contracts.Version;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.zip.ZipException;
+import rx.Observable;
 
 /**
  *
@@ -30,11 +32,9 @@ public interface GameInformation
     /**
      * Returns the version of the game.
      *
-     * @return
-     * @throws java.io.FileNotFoundException
-     * @throws java.text.ParseException
+     * @return the Observable<Version>
      */
-    Version getVersion() throws FileNotFoundException, ParseException, IOException;
+    Observable<Version> getVersion();
 
     /**
      * Returns the version of the original resource.
@@ -68,4 +68,17 @@ public interface GameInformation
      * @return
      */
     Path getPreferencesFolderPath();
+
+    /**
+     * Returns the comment in the zip.
+     *
+     * @param file
+     * @return
+     * @throws FileNotFoundException
+     * @throws ZipException
+     * @throws IOException
+     */
+    String getZipComments(File file) throws FileNotFoundException,
+                                            ZipException,
+                                            IOException;
 }

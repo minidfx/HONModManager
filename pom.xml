@@ -163,5 +163,10 @@
             <artifactId>rxjava-async-util</artifactId>
             <version>0.17.0-RC1</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.jlinqer</groupId>
+            <artifactId>jlinqer</artifactId>
+            <version>0.1.0</version>
+        </dependency>
     </dependencies>
 </project>

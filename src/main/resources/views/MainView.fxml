@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.effect.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
@@ -7,12 +8,37 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<SplitPane id="mainSplitPane" dividerPositions="0.35714285714285715" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
-    <items>
-        <BorderPane fx:id="leftPane" SplitPane.resizableWithParent="false" />
-        <BorderPane fx:id="centerPane">
-         <center>
-            <Label text="Please select a mod in the left menu" BorderPane.alignment="CENTER" />
-         </center></BorderPane>
-    </items>
-</SplitPane>
+
+<BorderPane xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+   <center>
+      <SplitPane id="mainSplitPane" fx:id="mainSplitPane" dividerPositions="0.35714285714285715" prefHeight="600.0" prefWidth="800.0">
+          <items>
+              <BorderPane fx:id="leftPane" SplitPane.resizableWithParent="false" />
+              <BorderPane fx:id="centerPane">
+               <center>
+                  <Label text="Please select a mod in the left menu" BorderPane.alignment="CENTER" />
+               </center>
+            </BorderPane>
+          </items>
+      </SplitPane>
+   </center>
+   <bottom>
+      <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="800.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label text="Heroes of Newerth Version:">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </Label>
+            <Label fx:id="hONVersion" text="1.0.0">
+               <HBox.margin>
+                  <Insets left="3.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+         <padding>
+            <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+         </padding>
+      </HBox>
+   </bottom>
+</BorderPane>

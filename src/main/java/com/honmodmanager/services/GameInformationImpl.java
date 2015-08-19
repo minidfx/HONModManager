@@ -1,10 +1,10 @@
 package com.honmodmanager.services;
 
-import com.honmodmanager.models.VersionImpl;
 import com.honmodmanager.models.contracts.Version;
 import com.honmodmanager.services.contracts.OperatingSystemInformation;
 import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.OperatingSystem;
+import com.honmodmanager.services.contracts.VersionParser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -16,25 +16,30 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import rx.Observable;
+import rx.Subscriber;
 
 @Service
 @Scope("prototype")
 public final class GameInformationImpl implements GameInformation
 {
     private final OperatingSystemInformation operatingSystemInformation;
+    private final VersionParser versionParser;
 
-    public GameInformationImpl(OperatingSystemInformation determiningOperatingSystem)
+    @Autowired
+    public GameInformationImpl(OperatingSystemInformation determiningOperatingSystem,
+                               VersionParser versionParser)
     {
         this.operatingSystemInformation = determiningOperatingSystem;
+        this.versionParser = versionParser;
     }
 
     @Override
     public Path getFolderPath()
     {
-        String gamePath;
-
         switch (this.operatingSystemInformation.getOperatingSystem())
         {
             case Windows:
@@ -78,72 +83,77 @@ public final class GameInformationImpl implements GameInformation
     }
 
     @Override
-    @SuppressWarnings("empty-statement")
-    public Version getVersion() throws FileNotFoundException, ParseException, IOException
-    {
-        File executable = this.getExecutablePath().toFile();
-
-        if (!executable.exists())
-            throw new FileNotFoundException("Heroes of Newerth executable not found.");
-
-        FileInputStream inputStream = new FileInputStream(executable);
-
-        byte[] buffer = GameInformationImpl.ReadAllBytes(executable.length(), inputStream);
-
-        // Reset the stream position
-        int startPosition = 0;
-
-        final OperatingSystem operatingSystem = this.operatingSystemInformation.getOperatingSystem();
-
-        switch (operatingSystem)
-        {
-            case Linux:
-            case MacOSx:
-                startPosition = GameInformationImpl.indexOf(buffer, new byte[]
-                                                    {
-                                                        0x5b, 0, 0, 0, 0x55, 0, 0, 0, 0x4e, 0, 0, 0, 0x49, 0, 0, 0, 0x43, 0, 0, 0, 0x4f, 0, 0, 0, 0x44, 0, 0, 0, 0x45, 0, 0, 0, 0x5d
-                });
-                startPosition += 40;
-                break;
-
-            case Windows:
-                startPosition = GameInformationImpl.indexOf(buffer, new byte[]
-                                                    {
-                                                        0x43, 0, 0x55, 0, 0x52, 0, 0x45, 0, 0x20, 0, 0x43, 0, 0x52, 0, 0x54, 0, 0x5d
-                });
-                startPosition += 20;
-                break;
-
-            default:
-                throw new UnsupportedOperationException("Operating system unknown.");
-        }
-
-        char[] firstPass = new char[33];
-        char[] secondPass = new char[8];
-
-        for (int i = startPosition; i < startPosition + 33; firstPass[i - startPosition] = (char) buffer[i++]);
-
-        int j = 0;
-        for (char c : firstPass)
-        {
-            if ((int) c > 0 && j < secondPass.length)
+    @SuppressWarnings(
             {
-                secondPass[j++] = c;
+                "empty-statement", "UseSpecificCatch"
+            })
+    public Observable<Version> getVersion()
+    {
+        return Observable.create((Subscriber<? super Version> observer) ->
+        {
+            try
+            {
+                File executable = this.getExecutablePath().toFile();
+
+                if (!executable.exists())
+                    throw new FileNotFoundException("Heroes of Newerth executable not found.");
+
+                FileInputStream inputStream = new FileInputStream(executable);
+
+                byte[] buffer = GameInformationImpl.ReadAllBytes(executable.length(), inputStream);
+
+                // Reset the stream position
+                int startPosition = 0;
+
+                final OperatingSystem operatingSystem = this.operatingSystemInformation.getOperatingSystem();
+
+                switch (operatingSystem)
+                {
+                    case Linux:
+                    case MacOSx:
+                        startPosition = GameInformationImpl.indexOf(buffer, new byte[]
+                                                            {
+                                                                0x5b, 0, 0, 0, 0x55, 0, 0, 0, 0x4e, 0, 0, 0, 0x49, 0, 0, 0, 0x43, 0, 0, 0, 0x4f, 0, 0, 0, 0x44, 0, 0, 0, 0x45, 0, 0, 0, 0x5d
+                        });
+                        startPosition += 40;
+                        break;
+
+                    case Windows:
+                        startPosition = GameInformationImpl.indexOf(buffer, new byte[]
+                                                            {
+                                                                0x43, 0, 0x55, 0, 0x52, 0, 0x45, 0, 0x20, 0, 0x43, 0, 0x52, 0, 0x54, 0, 0x5d
+                        });
+                        startPosition += 20;
+                        break;
+
+                    default:
+                        throw new UnsupportedOperationException("Operating system unknown.");
+                }
+
+                char[] firstPass = new char[33];
+                char[] secondPass = new char[8];
+
+                for (int i = startPosition; i < startPosition + 33; firstPass[i - startPosition] = (char) buffer[i++]);
+
+                int j = 0;
+                for (char c : firstPass)
+                {
+                    if ((int) c > 0 && j < secondPass.length)
+                    {
+                        secondPass[j++] = c;
+                    }
+                }
+
+                Version version = this.versionParser.Parse(new String(secondPass));
+
+                observer.onNext(version);
+                observer.onCompleted();
             }
-        }
-
-        Pattern pVersion = Pattern.compile("^(\\d*)\\.(\\d*)\\.(\\d*)\\.(\\d*).*$", Pattern.CASE_INSENSITIVE);
-        Matcher match = pVersion.matcher(new String(secondPass));
-
-        if (!match.matches())
-            throw new ParseException("Unable to identify the version.", 0);
-
-        int major = Integer.valueOf(match.group(1));
-        int minor = Integer.valueOf(match.group(2));
-        int fix = Integer.valueOf(match.group(3));
-        int build = Integer.valueOf(match.group(4));
-
-        return new VersionImpl(major, minor, fix, build);
+            catch (Exception exception)
+            {
+                observer.onError(exception);
+            }
+        });
     }
 
     @Override
@@ -166,20 +176,7 @@ public final class GameInformationImpl implements GameInformation
         if (!matcher.find())
             throw new ParseException("Cannot parse the version in the comments", 0);
 
-        String[] integers = matcher.group(1).split(".");
-
-        if (integers.length > 4)
-            throw new ParseException("Cannot parse more than 4 integers to determine a version.", 0);
-
-        if (integers.length < 1)
-            throw new ParseException("Cannot parse less than 1 integer to determine a version.", 0);
-
-        int major = Integer.valueOf(integers[0]);
-        int minor = integers.length > 1 ? Integer.valueOf(integers[1]) : 0;
-        int fix = integers.length > 2 ? Integer.valueOf(integers[2]) : 0;
-        int build = integers.length > 3 ? Integer.valueOf(integers[3]) : 0;
-
-        return new VersionImpl(major, minor, fix, build);
+        return this.versionParser.Parse(matcher.group(1));
     }
 
     @Override
@@ -201,9 +198,10 @@ public final class GameInformationImpl implements GameInformation
         }
     }
 
-    private String getZipComments(File file) throws FileNotFoundException,
-                                                    ZipException,
-                                                    IOException
+    @Override
+    public String getZipComments(File file) throws FileNotFoundException,
+                                                   ZipException,
+                                                   IOException
     {
         long fileLength = file.length();
         int padLeft = 22;

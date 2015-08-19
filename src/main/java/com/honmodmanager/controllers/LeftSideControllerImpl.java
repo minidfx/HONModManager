@@ -43,7 +43,7 @@ public final class LeftSideControllerImpl implements LeftSideController
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        Observable<Mod> observableMods = this.modReader.getInstalledMods();
+        Observable<Mod> observableMods = this.modReader.getMods();
 
         // Subscribe to the observable for updating the list
         observableMods.subscribe((Mod m) ->
