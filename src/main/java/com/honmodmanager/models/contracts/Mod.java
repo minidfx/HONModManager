@@ -20,4 +20,11 @@ public interface Mod
      * @return The mod version.
      */
     Version getVersion();
+
+    /**
+     * Gets the mod Id.
+     *
+     * @return The Id representing the mod.
+     */
+    String getId();
 }

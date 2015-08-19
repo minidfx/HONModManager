@@ -1,18 +1,22 @@
 package com.honmodmanager.controllers;
 
-import com.honmodmanager.controllers.contracts.FXmlController;
+import com.honmodmanager.controllers.contracts.HomeController;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
 /**
  * The controller for communicating with the view representing the Home.
  *
  * @author Burgy Benjamin
  */
-public class HomeController implements FXmlController
+@Scope("singleton")
+@Service
+public class HomeControllerImpl implements HomeController
 {
     @FXML
     private Label label;

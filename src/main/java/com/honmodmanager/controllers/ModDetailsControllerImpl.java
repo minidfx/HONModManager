@@ -1,8 +1,10 @@
 package com.honmodmanager.controllers;
 
-import com.honmodmanager.controllers.contracts.FXmlController;
+import com.honmodmanager.controllers.contracts.ModDetailsController;
 import java.net.URL;
 import java.util.ResourceBundle;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
 /**
  * The controller for communicating with the view containing the details of the
@@ -10,7 +12,9 @@ import java.util.ResourceBundle;
  *
  * @author Burgy Benjamin
  */
-public class ModDetailsController implements FXmlController
+@Scope("singleton")
+@Service
+public class ModDetailsControllerImpl implements ModDetailsController
 {
     @Override
     public void initialize(URL location, ResourceBundle resources)

@@ -1,8 +1,10 @@
 package com.honmodmanager.controllers;
 
-import com.honmodmanager.controllers.contracts.FXmlController;
+import com.honmodmanager.controllers.contracts.LeftSideController;
 import java.net.URL;
 import java.util.ResourceBundle;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
 /**
  * The controller for communicating wjth the view representing the mods
@@ -10,7 +12,9 @@ import java.util.ResourceBundle;
  *
  * @author Burgy Benjamin
  */
-public class LeftSideController implements FXmlController
+@Scope("singleton")
+@Service
+public class LeftSideControllerImpl implements LeftSideController
 {
     @Override
     public void initialize(URL location, ResourceBundle resources)
