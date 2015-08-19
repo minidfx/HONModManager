@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.ParseException;
+import java.util.zip.ZipException;
 
 /**
  *
@@ -17,14 +18,14 @@ public interface GameInformation
      *
      * @return
      */
-    Path getFolder();
+    Path getFolderPath();
 
     /**
      * Returns the path of the executable.
      *
      * @return
      */
-    Path getExecutable();
+    Path getExecutablePath();
 
     /**
      * Returns the version of the game.
@@ -39,20 +40,32 @@ public interface GameInformation
      * Returns the version of the original resource.
      *
      * @return
+     * @throws java.io.FileNotFoundException
+     * @throws java.util.zip.ZipException
      */
-    Version getOriginalResourceVersion();
+    Version getAdditionalResourceVersion() throws FileNotFoundException,
+                                                  ZipException,
+                                                  IOException,
+                                                  ParseException;
+
+    /**
+     * Returns the path of the original resources.
+     *
+     * @return
+     */
+    Path getOriginalResourcePath();
+
+    /**
+     * Returns the path of the additional resources.
+     *
+     * @return
+     */
+    Path getAdditonalResourcePath();
 
     /**
      * Returns the path of the preferences folder.
      *
      * @return
      */
-    Path getPreferencesFolder();
-
-    /**
-     * Returns the comment of the zip containing new resources.
-     *
-     * @return
-     */
-    String getZipComments();
+    Path getPreferencesFolderPath();
 }

@@ -28,7 +28,7 @@ final public class MainApp extends Application
         // Load the view 
         Parent root = mainController.loadView("/views/MainView.fxml").getRoot();
 
-        logger.info("HomeController ready to use.");
+        logger.info("HomeController completely loaded.");
 
         // Create the main Scene
         Scene scene = new Scene(root);

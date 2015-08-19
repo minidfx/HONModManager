@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
  */
 @Scope("singleton")
 @Service
-public class ModDetailsControllerImpl implements ModDetailsController
+public final class ModDetailsControllerImpl implements ModDetailsController
 {
     @Override
     public void initialize(URL location, ResourceBundle resources)
