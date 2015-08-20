@@ -1,10 +1,11 @@
 package com.honmodmanager.controllers;
 
 import com.honmodmanager.controllers.contracts.ModDetailsController;
+import com.honmodmanager.models.contracts.Mod;
 import java.net.URL;
 import java.util.ResourceBundle;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 
 /**
  * The controller for communicating with the view containing the details of the
@@ -12,13 +13,29 @@ import org.springframework.stereotype.Service;
  *
  * @author Burgy Benjamin
  */
-@Scope("singleton")
-@Service
 public final class ModDetailsControllerImpl extends FXmlControllerBase implements ModDetailsController
 {
+    private final Mod model;
+
+    @FXML
+    public Label title;
+
+    @FXML
+    public Label version;
+
+    @FXML
+    public Label description;
+
+    public ModDetailsControllerImpl(Mod model)
+    {
+        this.model = model;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.title.setText(this.model.getName());
+        this.version.setText(this.model.getVersion().toString());
+        this.description.setText(this.model.getDescription());
     }
 }

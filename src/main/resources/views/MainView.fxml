@@ -10,7 +10,7 @@
 
 <BorderPane minHeight="200.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
    <center>
-      <SplitPane id="mainSplitPane" fx:id="mainSplitPane" dividerPositions="0.35714285714285715" prefHeight="600.0" prefWidth="800.0">
+      <SplitPane id="mainSplitPane" fx:id="mainSplitPane" dividerPositions="0.38220551378446116" prefHeight="600.0" prefWidth="800.0">
           <items>
               <BorderPane fx:id="leftPane" SplitPane.resizableWithParent="false" />
               <BorderPane fx:id="centerPane">

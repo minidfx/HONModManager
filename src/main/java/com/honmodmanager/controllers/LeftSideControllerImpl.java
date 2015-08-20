@@ -1,10 +1,12 @@
 package com.honmodmanager.controllers;
 
+import com.honmodmanager.events.ModSelectedEvent;
 import com.github.jlinqer.collections.List;
 import com.honmodmanager.controllers.contracts.LeftModRowController;
 import com.honmodmanager.controllers.contracts.LeftModRowControllerFactory;
 import com.honmodmanager.controllers.contracts.LeftSideController;
 import com.honmodmanager.models.contracts.Mod;
+import com.honmodmanager.services.contracts.EventAggregator;
 import com.honmodmanager.services.contracts.ModReader;
 import java.io.IOException;
 import java.net.URL;
@@ -42,15 +44,18 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
     @FXML
     public ListView<Parent> listMod;
     private final LeftModRowControllerFactory leftModRowControllerFactory;
+    private final EventAggregator eventAggregator;
 
     @Autowired
     public LeftSideControllerImpl(ModReader modReader,
-                                  LeftModRowControllerFactory leftModRowControllerFactory)
+                                  LeftModRowControllerFactory leftModRowControllerFactory,
+                                  EventAggregator eventAggregator)
     {
         this.controllers = new List<>();
 
         this.modReader = modReader;
         this.leftModRowControllerFactory = leftModRowControllerFactory;
+        this.eventAggregator = eventAggregator;
     }
 
     @Override
@@ -72,7 +77,11 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
                                 return c.getFXMLoader().getRoot().equals(newValue);
                     });
 
-                    LOG.info(String.format("Mod %s selected.", controller.getModel().getName()));
+                    Mod modSelected = controller.getModel();
+                    LOG.info(String.format("Mod %s selected.", modSelected.getName()));
+
+                    // Notify the controller responsible for displaying details of the mod selected.
+                    this.eventAggregator.Publish(new ModSelectedEvent(modSelected));
                 });
     }
 

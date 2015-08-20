@@ -80,4 +80,8 @@ public interface Mod
      * @param value
      */
     void setDate(Date value);
+
+    void setDescription(String description);
+
+    String getDescription();
 }

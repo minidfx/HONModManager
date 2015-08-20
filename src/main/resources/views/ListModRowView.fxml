@@ -8,10 +8,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
 <HBox alignment="CENTER_LEFT" prefHeight="60.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <ImageView fx:id="icon" pickOnBounds="true" preserveRatio="true" />
+        <ImageView fx:id="icon" fitHeight="55.0" fitWidth="55.0" pickOnBounds="true" preserveRatio="true" />
         <AnchorPane prefHeight="200.0" prefWidth="200.0">
             <children>
                 <Label fx:id="name" layoutX="10.0" layoutY="7.0" text="mod name">

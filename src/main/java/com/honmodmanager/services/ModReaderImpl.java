@@ -160,6 +160,8 @@ public final class ModReaderImpl implements ModReader
 
             if (modIcon != null)
                 mod.setIcon(modIcon);
+            else
+                mod.setIcon(new Image("/images/defaultModIcon.jpg"));
 
             return mod;
         }
@@ -256,6 +258,10 @@ public final class ModReaderImpl implements ModReader
             return modApplied;
         }
 
-        return new ModImpl(modName, modVersion, false);
+        Mod newMod = new ModImpl(modName, modVersion, false);
+
+        newMod.setDescription(modDescription);
+
+        return newMod;
     }
 }

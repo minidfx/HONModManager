@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.text.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
@@ -7,20 +8,22 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.40">
+<AnchorPane id="AnchorPane" minHeight="200.0" minWidth="200.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <Label id="title" layoutX="20.0" layoutY="22.0" text="Title">
+        <Label fx:id="title" layoutX="20.0" layoutY="22.0" text="Title" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="0.0">
             <font>
-                <Font size="41.0" />
+                <Font size="25.0" />
             </font>
         </Label>
-        <Label id="description" layoutX="20.0" layoutY="82.0" text="Description" />
-        <Label id="version" layoutX="521.0" layoutY="35.0" text="Version" textAlignment="RIGHT">
+        <Label fx:id="description" alignment="TOP_LEFT" layoutX="20.0" layoutY="82.0" text="Description" textOverrun="WORD_ELLIPSIS" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="40.0" />
+        <Label fx:id="version" layoutX="521.0" layoutY="35.0" text="Version" textAlignment="RIGHT" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <font>
                 <Font size="19.0" />
             </font>
         </Label>
-        <Button id="updateButton" layoutX="528.0" layoutY="360.0" mnemonicParsing="false" text="Update" textAlignment="RIGHT" />
+        <Button fx:id="updateButton" layoutX="510.0" layoutY="332.0" mnemonicParsing="false" text="Update" textAlignment="RIGHT" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </children>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+   </padding>
 </AnchorPane>

@@ -12,6 +12,8 @@ public final class ModImpl implements Mod
     private final Version version;
     private final boolean isApplied;
     private Image icon;
+    private Date date;
+    public String description;
 
     public static String buildId(String modName)
     {
@@ -24,13 +26,22 @@ public final class ModImpl implements Mod
 
         return modFixName.toLowerCase();
     }
-    private Date date;
 
     public ModImpl(String name, Version version, boolean isApplied)
     {
         this.name = name;
         this.version = version;
         this.isApplied = isApplied;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 
     @Override

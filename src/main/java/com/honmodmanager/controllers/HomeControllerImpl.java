@@ -3,7 +3,11 @@ package com.honmodmanager.controllers;
 import com.honmodmanager.controllers.contracts.HomeController;
 import com.honmodmanager.controllers.contracts.LeftSideController;
 import com.honmodmanager.controllers.contracts.ModDetailsController;
+import com.honmodmanager.controllers.contracts.ModDetailsControllerFactory;
+import com.honmodmanager.events.ModSelectedEvent;
 import com.honmodmanager.models.contracts.Version;
+import com.honmodmanager.services.contracts.EventAggregator;
+import com.honmodmanager.services.contracts.EventAggregatorHandler;
 import com.honmodmanager.services.contracts.GameInformation;
 import java.io.IOException;
 import java.net.URL;
@@ -27,11 +31,15 @@ import rx.Observable;
  */
 @Scope("singleton")
 @Service
-public final class HomeControllerImpl extends FXmlControllerBase implements HomeController
+public final class HomeControllerImpl extends FXmlControllerBase implements HomeController,
+                                                                            EventAggregatorHandler<ModSelectedEvent>
 {
     private final LeftSideController leftSideController;
-    private final ModDetailsController modDetailsController;
     private static final Logger LOG = Logger.getLogger(HomeControllerImpl.class.getName());
+
+    private final GameInformation gameInformation;
+    private final ModDetailsControllerFactory modDetailsControllerFactory;
+    private final EventAggregator eventAggregator;
 
     @FXML
     public SplitPane mainSplitPane;
@@ -44,16 +52,17 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
 
     @FXML
     public Label hONVersion;
-    private final GameInformation gameInformation;
 
     @Autowired
     public HomeControllerImpl(LeftSideController leftSideController,
-                              ModDetailsController modDetailsController,
-                              GameInformation gameInformation)
+                              ModDetailsControllerFactory modDetailsControllerFactory,
+                              GameInformation gameInformation,
+                              EventAggregator eventAggregator)
     {
         this.leftSideController = leftSideController;
-        this.modDetailsController = modDetailsController;
+        this.modDetailsControllerFactory = modDetailsControllerFactory;
         this.gameInformation = gameInformation;
+        this.eventAggregator = eventAggregator;
     }
 
     @Override
@@ -61,6 +70,8 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     {
         this.loadGameVersion();
         this.loadViews();
+
+        this.eventAggregator.Subscribe(this);
     }
 
     private void loadViews()
@@ -101,5 +112,21 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
                                                         this.hONVersion.setText("Error!");
                                             });
                                         });
+    }
+
+    @Override
+    public void handle(ModSelectedEvent event)
+    {
+        ModDetailsController controller = this.modDetailsControllerFactory.Create(event.getModel());
+
+        try
+        {
+            FXMLLoader modDetailsControllerFxmlLoader = controller.loadView("/views/ModDetailsView.fxml");
+            this.centerPane.setCenter(modDetailsControllerFxmlLoader.getRoot());
+        }
+        catch (IOException ex)
+        {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
     }
 }
