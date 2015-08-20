@@ -35,21 +35,25 @@ public final class JavaFxStarterImpl implements JavaFxStarter
 
     private void ListenWindowSize(Stage stage)
     {
-        stage.widthProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            double width = newValue.doubleValue();
+        stage.widthProperty().addListener((
+                ObservableValue<? extends Number> observable, Number oldValue,
+                Number newValue) ->
+                {
+                    double width = newValue.doubleValue();
 
-            this.userPreferences.putDouble("WindowWidth", width);
-            LOG.info(String.format("Saved window width: %f", width));
-        });
+                    this.userPreferences.putDouble("WindowWidth", width);
+                    LOG.info(String.format("Saved window width: %f", width));
+                });
 
-        stage.heightProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            double height = newValue.doubleValue();
+        stage.heightProperty().addListener((
+                ObservableValue<? extends Number> observable, Number oldValue,
+                Number newValue) ->
+                {
+                    double height = newValue.doubleValue();
 
-            this.userPreferences.putDouble("WindowHeight", height);
-            LOG.info(String.format("Saved window height: %f", height));
-        });
+                    this.userPreferences.putDouble("WindowHeight", height);
+                    LOG.info(String.format("Saved window height: %f", height));
+                });
     }
 
     @Override

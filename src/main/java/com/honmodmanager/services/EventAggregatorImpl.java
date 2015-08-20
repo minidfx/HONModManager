@@ -10,7 +10,6 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 @Service
 @Scope("singleton")

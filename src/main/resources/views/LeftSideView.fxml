@@ -15,10 +15,10 @@
     </rowConstraints>
     <children>
         <ListView id="listView" fx:id="listMod" />
-      <BorderPane fx:id="progressIndicator" opacity="0.7" style="-fx-background-color: white;">
-         <center>
-              <ProgressIndicator id="progressIndicator" centerShape="false" maxHeight="50.0" maxWidth="50.0" BorderPane.alignment="CENTER" />
-         </center>
-      </BorderPane>
+        <BorderPane fx:id="progressIndicator" opacity="0.7" style="-fx-background-color: white;">
+            <center>
+                <ProgressIndicator id="progressIndicator" centerShape="false" maxHeight="50.0" maxWidth="50.0" BorderPane.alignment="CENTER" />
+            </center>
+        </BorderPane>
     </children>
 </GridPane>

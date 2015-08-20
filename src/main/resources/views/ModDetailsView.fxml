@@ -23,7 +23,7 @@
         </Label>
         <Button fx:id="updateButton" layoutX="510.0" layoutY="332.0" mnemonicParsing="false" text="Update" textAlignment="RIGHT" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </children>
-   <padding>
-      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-   </padding>
+    <padding>
+        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+    </padding>
 </AnchorPane>
