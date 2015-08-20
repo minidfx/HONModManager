@@ -188,7 +188,7 @@ public final class GameInformationImpl implements GameInformation
                 return Paths.get(System.getenv("HOME"), "Heroes of Newerth/game");
 
             case MacOSx:
-                return Paths.get(System.getenv("HOME"), "Library/Application Support/", "Heroes of Newerth/game");
+                return Paths.get(System.getenv("HOME"), "Library", "Application Support", "Heroes of Newerth", "game");
 
             case Windows:
                 return Paths.get(this.getFolderPath().toString(), "game");
@@ -314,5 +314,11 @@ public final class GameInformationImpl implements GameInformation
     public Path getAdditonalResourcePath()
     {
         return Paths.get(this.getFolderPath().toString(), "resources999.s2z");
+    }
+
+    @Override
+    public Path getModsFolder()
+    {
+        return Paths.get(this.getPreferencesFolderPath().toString(), "mods");
     }
 }

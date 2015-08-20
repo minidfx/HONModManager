@@ -61,4 +61,6 @@ public interface FXmlController extends Initializable
             throw e;
         }
     }
+
+    FXMLLoader getFXMLoader();
 }

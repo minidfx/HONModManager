@@ -2,7 +2,6 @@ package com.honmodmanager;
 
 import com.honmodmanager.services.JavaFxStarterImpl;
 import com.honmodmanager.services.contracts.JavaFxStarter;
-import com.sun.istack.internal.logging.Logger;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.stage.Stage;

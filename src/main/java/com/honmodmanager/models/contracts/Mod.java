@@ -1,6 +1,8 @@
 package com.honmodmanager.models.contracts;
 
 import java.net.URI;
+import java.util.Date;
+import javafx.scene.image.Image;
 
 /**
  * Represent a game mod.
@@ -50,4 +52,32 @@ public interface Mod
      * @return
      */
     boolean isApplied();
+
+    /**
+     * Returns the icon associated to the mod.
+     *
+     * @return
+     */
+    Image getIcon();
+
+    /**
+     * Sets the icon representing the mod.
+     *
+     * @param image
+     */
+    void setIcon(Image image);
+
+    /**
+     * Returns the date of the mod.
+     *
+     * @return
+     */
+    Date getDate();
+
+    /**
+     * Sets the date of the mod.
+     *
+     * @param value
+     */
+    void setDate(Date value);
 }

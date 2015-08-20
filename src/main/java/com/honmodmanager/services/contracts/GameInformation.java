@@ -70,6 +70,13 @@ public interface GameInformation
     Path getPreferencesFolderPath();
 
     /**
+     * Returns the path containing mods.
+     *
+     * @return
+     */
+    Path getModsFolder();
+
+    /**
      * Returns the comment in the zip.
      *
      * @param file

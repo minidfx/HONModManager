@@ -27,7 +27,7 @@ import rx.Observable;
  */
 @Scope("singleton")
 @Service
-public final class HomeControllerImpl implements HomeController
+public final class HomeControllerImpl extends FXmlControllerBase implements HomeController
 {
     private final LeftSideController leftSideController;
     private final ModDetailsController modDetailsController;
