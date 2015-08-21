@@ -1,6 +1,5 @@
 package com.honmodmanager.services;
 
-import com.github.jlinqer.collections.Dictionary;
 import com.github.jlinqer.collections.List;
 import com.github.jlinqer.linq.IEnumerable;
 import com.honmodmanager.services.contracts.EventAggregator;
@@ -8,6 +7,7 @@ import com.honmodmanager.services.contracts.EventAggregatorHandler;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import javafx.util.Pair;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +15,11 @@ import org.springframework.stereotype.Service;
 @Scope("singleton")
 public final class EventAggregatorImpl implements EventAggregator
 {
-    private final Dictionary<Type, EventAggregatorHandler> subscribers;
+    private final List<Pair<Type, EventAggregatorHandler>> subscribers;
 
     public EventAggregatorImpl()
     {
-        this.subscribers = new Dictionary<>();
+        this.subscribers = new List<>();
     }
 
     @Override
@@ -27,8 +27,9 @@ public final class EventAggregatorImpl implements EventAggregator
     {
         Type eventType = o.getClass();
 
-        IEnumerable<EventAggregatorHandler> filteredSubscribers = this.subscribers.where(x ->
-                x.getKey().equals(eventType)).select(x -> x.getValue());
+        IEnumerable<EventAggregatorHandler> filteredSubscribers = this.subscribers
+                .where(x -> x.getKey().equals(eventType))
+                .select(x -> x.getValue());
 
         for (EventAggregatorHandler subscriber : filteredSubscribers)
         {
@@ -60,7 +61,7 @@ public final class EventAggregatorImpl implements EventAggregator
 
             for (Type eventType : eventTypes)
             {
-                this.subscribers.put(eventType, subscriber);
+                this.subscribers.add(new Pair<>(eventType, subscriber));
             }
         }
     }

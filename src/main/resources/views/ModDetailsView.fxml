@@ -15,8 +15,8 @@
                 <Font size="25.0" />
             </font>
         </Label>
-        <Label fx:id="description" alignment="TOP_LEFT" layoutX="20.0" layoutY="82.0" prefHeight="100.0" text="Description" textOverrun="WORD_ELLIPSIS" wrapText="true" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0" />
-        <Label fx:id="version" layoutX="521.0" layoutY="35.0" text="Version" textAlignment="RIGHT" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <Label fx:id="description" alignment="TOP_LEFT" layoutX="20.0" layoutY="82.0" prefHeight="100.0" text="Description" textOverrun="WORD_ELLIPSIS" wrapText="true" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="60.0" />
+        <Label fx:id="version" layoutX="17.0" layoutY="35.0" text="Version" textAlignment="RIGHT" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="28.0">
             <font>
                 <Font size="19.0" />
             </font>
@@ -29,6 +29,7 @@
         <Label layoutX="20.0" layoutY="194.0" text="Update" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" />
         <Hyperlink fx:id="downloadURL" layoutX="79.0" layoutY="179.0" onAction="#handleDownloadAction" text="Hyperlink" AnchorPane.bottomAnchor="56.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="0.0" />
         <Hyperlink fx:id="updateURL" layoutX="85.0" layoutY="199.0" onAction="#handleUpdateAction" text="Hyperlink" AnchorPane.bottomAnchor="36.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="0.0" />
+      <ToggleButton fx:id="enabled" layoutX="100.0" layoutY="7.0" mnemonicParsing="false" onAction="#handleEnableAction" text="Enabled" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
     </children>
     <padding>
         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

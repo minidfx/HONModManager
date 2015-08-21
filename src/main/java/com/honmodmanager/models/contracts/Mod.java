@@ -1,5 +1,7 @@
 package com.honmodmanager.models.contracts;
 
+import com.github.jlinqer.collections.Dictionary;
+import com.github.jlinqer.collections.List;
 import java.net.URI;
 import java.net.URL;
 import java.util.Date;
@@ -37,7 +39,7 @@ public interface Mod
      *
      * @return
      */
-    boolean isApplied();
+    boolean isEnabled();
 
     /**
      * Returns the icon associated to the mod.
@@ -171,4 +173,22 @@ public interface Mod
      * @return
      */
     Version getVersion();
+
+    List<String> getIncompatibillities();
+
+    void addIncompatibillity(String modId);
+
+    List<String> getRequiredMods();
+
+    void addRequirement(String modId);
+
+    Dictionary<String, Version> getApplyAfter();
+
+    void addApplyAfter(String modId, Version version);
+
+    Dictionary<String, Version> getApplyBefore();
+
+    void addApplyBefore(String modId, Version version);
+
+    void enabled(boolean value);
 }

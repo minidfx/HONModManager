@@ -1,7 +1,9 @@
 package com.honmodmanager.controllers;
 
 import com.honmodmanager.controllers.contracts.ModDetailsController;
+import com.honmodmanager.events.ModEnabledEvent;
 import com.honmodmanager.models.contracts.Mod;
+import com.honmodmanager.services.contracts.EventAggregator;
 import com.honmodmanager.services.contracts.PlatformInteraction;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -12,6 +14,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 
 /**
  * The controller for communicating with the view containing the details of the
@@ -23,6 +26,7 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
 {
     private final Mod model;
     private final PlatformInteraction platformInteraction;
+    private final EventAggregator eventAggregator;
 
     @FXML
     public Label title;
@@ -43,12 +47,18 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
     public Hyperlink updateURL;
 
     @FXML
+    public ToggleButton enabled;
+
+    @FXML
     public Label date;
 
-    public ModDetailsControllerImpl(Mod model, PlatformInteraction platformInteraction)
+    public ModDetailsControllerImpl(Mod model,
+                                    PlatformInteraction platformInteraction,
+                                    EventAggregator eventAggregator)
     {
         this.model = model;
         this.platformInteraction = platformInteraction;
+        this.eventAggregator = eventAggregator;
     }
 
     @Override
@@ -60,6 +70,7 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
         this.webLink.setText(this.model.getWebLink().toString());
         this.downloadURL.setText(this.model.getDownloadURL().toString());
         this.updateURL.setText(this.model.getUpdateURL().toString());
+        this.enabled.setSelected(this.model.isEnabled());
 
         Date modDate = this.model.getDate();
 
@@ -91,5 +102,14 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
     private void handleUpdateButtonAction(ActionEvent event)
     {
         throw new UnsupportedOperationException();
+    }
+
+    @FXML
+    private void handleEnableAction(ActionEvent event)
+    {
+        boolean isEnabled = this.enabled.isSelected();
+
+        this.model.enabled(isEnabled);
+        this.eventAggregator.Publish(new ModEnabledEvent(this.model));
     }
 }

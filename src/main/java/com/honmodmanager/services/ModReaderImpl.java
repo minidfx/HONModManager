@@ -11,16 +11,14 @@ import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.ModIdBuilder;
 import com.honmodmanager.services.contracts.ModReader;
 import com.honmodmanager.services.contracts.VersionParser;
+import com.joestelmach.natty.Parser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.logging.Level;
@@ -55,7 +53,7 @@ public final class ModReaderImpl implements ModReader
 
     private final GameInformation gameInformation;
     private final VersionParser versionParser;
-    private final DateFormat dateFormat;
+    private final Parser dateParser;
     private final ModIdBuilder modIdBuilder;
 
     @Autowired
@@ -66,8 +64,7 @@ public final class ModReaderImpl implements ModReader
         this.gameInformation = gameInformation;
         this.versionParser = versionParser;
 
-        // FIXME: Configure spring to inject SimpleDateFormat with DateFormat as class.
-        this.dateFormat = new SimpleDateFormat();
+        this.dateParser = new Parser();
         this.modIdBuilder = modIdBuilder;
     }
 
@@ -231,9 +228,13 @@ public final class ModReaderImpl implements ModReader
             throw new ParseException("Cannot parse the mod installed.", 0);
 
         String name = matcher.group(1);
+        String id = this.modIdBuilder.build(name);
         Version version = this.versionParser.Parse(matcher.group(2));
 
-        return new ModImpl(line, version, true);
+        Mod newMod = new ModImpl(line, version, true);
+        newMod.setId(id);
+
+        return newMod;
     }
 
     private Mod readXml(ZipFile zip, ZipEntry entry, List<Mod> modsApplied) throws ParserConfigurationException,
@@ -264,7 +265,7 @@ public final class ModReaderImpl implements ModReader
         Date modDate = null;
 
         if (!xmlModDate.isEmpty())
-            modDate = this.dateFormat.parse(xmlModDate);
+            modDate = this.dateParser.parse(xmlModDate).get(0).getDates().get(0);
 
         String modDescription = modificationElement.getAttribute("description");
         String modAuthor = modificationElement.getAttribute("author");
@@ -280,6 +281,7 @@ public final class ModReaderImpl implements ModReader
         if (modDate != null)
             mod.setDate(modDate);
 
+        mod.setId(modId);
         mod.setDescription(modDescription);
         mod.setAuthor(modAuthor);
         mod.setWebLink(modWebLink);
@@ -287,6 +289,45 @@ public final class ModReaderImpl implements ModReader
         mod.setDownloadURL(downloadURL);
         mod.setModManagerVersion(mmVersion);
         mod.setGameVersion(appVersion);
+
+        NodeList incompatibilities = modificationElement.getElementsByTagName("incompatibility");
+        for (int i = 0; i < incompatibilities.getLength(); i++)
+        {
+            Element element = (Element) incompatibilities.item(i);
+            String incompatibleModId = element.getAttribute("name");
+
+            mod.addIncompatibillity(incompatibleModId);
+        }
+
+        NodeList requirements = modificationElement.getElementsByTagName("requierement");
+
+        for (int j = 0; j < requirements.getLength(); j++)
+        {
+            Element element = (Element) requirements.item(j);
+            String requiredModId = element.getAttribute("name");
+
+            mod.addRequirement(requiredModId);
+        }
+
+        NodeList applyBefore = modificationElement.getElementsByTagName("applybefore");
+        for (int k = 0; k < applyBefore.getLength(); k++)
+        {
+            Element element = (Element) applyBefore.item(k);
+            String applyBeforeModId = element.getAttribute("name");
+            Version applyBeforeVersion = this.versionParser.Parse(element.getAttribute("version"));
+
+            mod.addApplyBefore(applyBeforeModId, applyBeforeVersion);
+        }
+
+        NodeList applyAfter = xml.getElementsByTagName("applyafter");
+        for (int l = 0; l < applyAfter.getLength(); l++)
+        {
+            Element element = (Element) applyAfter.item(l);
+            String applyAfterModId = element.getAttribute("name");
+            Version applyAfterVersion = this.versionParser.Parse(element.getAttribute("version"));
+
+            mod.addApplyAfter(applyAfterModId, applyAfterVersion);
+        }
 
         return mod;
     }

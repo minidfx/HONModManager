@@ -10,7 +10,7 @@
 
 <BorderPane minHeight="200.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <center>
-        <SplitPane id="mainSplitPane" fx:id="mainSplitPane" dividerPositions="0.38220551378446116" prefHeight="600.0" prefWidth="800.0">
+        <SplitPane id="mainSplitPane" fx:id="mainSplitPane" dividerPositions="0.38220551378446116" prefHeight="600.0" prefWidth="800.0" BorderPane.alignment="TOP_LEFT">
             <items>
                 <BorderPane fx:id="leftPane" SplitPane.resizableWithParent="false" />
                 <BorderPane fx:id="centerPane">
@@ -22,7 +22,7 @@
         </SplitPane>
     </center>
     <bottom>
-        <HBox alignment="CENTER_LEFT" prefHeight="26.0" prefWidth="800.0" BorderPane.alignment="CENTER">
+        <HBox alignment="CENTER_LEFT" minWidth="26.0" prefHeight="26.0" BorderPane.alignment="CENTER_LEFT">
             <children>
                 <Label text="Heroes of Newerth Version:">
                     <HBox.margin>
@@ -40,4 +40,20 @@
             </padding>
         </HBox>
     </bottom>
+   <top>
+      <HBox alignment="CENTER_LEFT" prefHeight="48.0" spacing="5.0" BorderPane.alignment="CENTER_LEFT">
+         <children>
+            <Button mnemonicParsing="false" onAction="#handleApplyAction" text="Apply" />
+            <Button mnemonicParsing="false" onAction="#handleApplyAndRunAction" text="Apply &amp; Run HON" />
+            <Button mnemonicParsing="false" onAction="#handleUpdateAllAction" text="Update All" />
+            <Button mnemonicParsing="false" onAction="#handleOpenModsFolderAction" text="Open Mods folder" />
+         </children>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
+      </HBox>
+   </top>
 </BorderPane>

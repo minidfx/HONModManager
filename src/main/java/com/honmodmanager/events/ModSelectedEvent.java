@@ -8,7 +8,7 @@ import com.honmodmanager.models.contracts.Mod;
  */
 public final class ModSelectedEvent
 {
-    private Mod model;
+    private final Mod model;
 
     public ModSelectedEvent(Mod model)
     {

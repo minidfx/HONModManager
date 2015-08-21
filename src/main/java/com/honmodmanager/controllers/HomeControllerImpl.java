@@ -9,11 +9,14 @@ import com.honmodmanager.models.contracts.Version;
 import com.honmodmanager.services.contracts.EventAggregator;
 import com.honmodmanager.services.contracts.EventAggregatorHandler;
 import com.honmodmanager.services.contracts.GameInformation;
+import com.honmodmanager.services.contracts.PlatformInteraction;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
@@ -52,17 +55,20 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
 
     @FXML
     public Label hONVersion;
+    private final PlatformInteraction platformInteraction;
 
     @Autowired
     public HomeControllerImpl(LeftSideController leftSideController,
                               ModDetailsControllerFactory modDetailsControllerFactory,
                               GameInformation gameInformation,
-                              EventAggregator eventAggregator)
+                              EventAggregator eventAggregator,
+                              PlatformInteraction platformInteraction)
     {
         this.leftSideController = leftSideController;
         this.modDetailsControllerFactory = modDetailsControllerFactory;
         this.gameInformation = gameInformation;
         this.eventAggregator = eventAggregator;
+        this.platformInteraction = platformInteraction;
     }
 
     @Override
@@ -132,5 +138,37 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
         }
+    }
+
+    @FXML
+    private void handleOpenModsFolderAction(ActionEvent event)
+    {
+        try
+        {
+            Path modsFolder = this.gameInformation.getModsFolder();
+            this.platformInteraction.openFolder(modsFolder);
+        }
+        catch (IOException ex)
+        {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+    }
+
+    @FXML
+    private void handleUpdateAllAction(ActionEvent event)
+    {
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    @FXML
+    private void handleApplyAction(ActionEvent event)
+    {
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    @FXML
+    private void handleApplyAndRunAction(ActionEvent event)
+    {
+        throw new UnsupportedOperationException("Not implemented yet.");
     }
 }

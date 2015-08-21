@@ -5,6 +5,7 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -23,5 +24,11 @@ public final class PlatformInteractionImpl implements PlatformInteraction
     public void openLink(URL address) throws IOException, URISyntaxException
     {
         this.desktop.browse(address.toURI());
+    }
+
+    @Override
+    public void openFolder(Path path) throws IOException
+    {
+        this.desktop.open(path.toFile());
     }
 }
