@@ -32,7 +32,7 @@ public final class EventAggregatorImpl implements EventAggregator
 
         for (EventAggregatorHandler subscriber : filteredSubscribers)
         {
-            subscriber.handle(o);
+            subscriber.handleEvent(o);
         }
     }
 

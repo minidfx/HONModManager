@@ -1,11 +1,11 @@
 package com.honmodmanager.models.contracts;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.Date;
 import javafx.scene.image.Image;
 
 /**
- * Represent a game mod.
  *
  * @author Burgy Benjamin
  */
@@ -19,13 +19,6 @@ public interface Mod
     String getName();
 
     /**
-     * Gets the mod version.
-     *
-     * @return The mod version.
-     */
-    Version getVersion();
-
-    /**
      * Gets the mod Id.
      *
      * @return The Id representing the mod.
@@ -33,18 +26,11 @@ public interface Mod
     String getId();
 
     /**
-     * Gets the URI of the update mod.
+     * Sets the Id of the mod.
      *
-     * @return
+     * @param value
      */
-    URI getUpdateUri();
-
-    /**
-     * Gets the URI of the download mod.
-     *
-     * @return
-     */
-    URI getDownloadUri();
+    void setId(String value);
 
     /**
      * Determines whether the mod is applied on the game.
@@ -81,7 +67,108 @@ public interface Mod
      */
     void setDate(Date value);
 
+    /**
+     * Sets the description of the mod.
+     *
+     * @param description
+     */
     void setDescription(String description);
 
+    /**
+     * Gets the description of the mods.
+     *
+     * @return
+     */
     String getDescription();
+
+    /**
+     * Sets the name of the author.
+     *
+     * @param author
+     */
+    void setAuthor(String value);
+
+    /**
+     * Gets the name of the author.
+     *
+     * @return
+     */
+    String getAuthor();
+
+    /**
+     * Gets the URI containing information of the mod.
+     *
+     * @return
+     */
+    URI getWebLink();
+
+    /**
+     * Sets the URI containing information of the mod.
+     *
+     * @param value
+     */
+    void setWebLink(URI value);
+
+    /**
+     * Sets the URL to update the mod.
+     *
+     * @param value
+     */
+    void setUpdateURL(URL value);
+
+    /**
+     * Gets the URL to update the mod.
+     *
+     * @return
+     */
+    URL getUpdateURL();
+
+    /**
+     * Gets the URL to download the mod the first time.
+     *
+     * @return
+     */
+    URL getDownloadURL();
+
+    /**
+     * Sets the URL to download the mod the first time.
+     *
+     * @param value
+     */
+    void setDownloadURL(URL value);
+
+    /**
+     * Gets the version of the mod manager.
+     *
+     * @return
+     */
+    Version getModManagerVersion();
+
+    /**
+     * Sets the version of the mod manager.
+     *
+     * @param value
+     */
+    void setModManagerVersion(Version value);
+
+    /**
+     * Gets the version of the game.
+     *
+     * @return
+     */
+    Version getGameVersion();
+
+    /**
+     * Sets the version of the game.
+     *
+     * @param value
+     */
+    void setGameVersion(Version value);
+
+    /**
+     * Gets the version of the mod.
+     *
+     * @return
+     */
+    Version getVersion();
 }

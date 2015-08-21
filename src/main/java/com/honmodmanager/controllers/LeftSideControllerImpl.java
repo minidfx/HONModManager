@@ -37,14 +37,14 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
     private static final Logger LOG = Logger.getLogger(LeftSideControllerImpl.class.getName());
     private final ModReader modReader;
     List<LeftModRowController> controllers;
+    private final LeftModRowControllerFactory leftModRowControllerFactory;
+    private final EventAggregator eventAggregator;
 
     @FXML
     public BorderPane progressIndicator;
 
     @FXML
     public ListView<Parent> listMod;
-    private final LeftModRowControllerFactory leftModRowControllerFactory;
-    private final EventAggregator eventAggregator;
 
     @Autowired
     public LeftSideControllerImpl(ModReader modReader,
@@ -83,12 +83,6 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
                     // Notify the controller responsible for displaying details of the mod selected.
                     this.eventAggregator.Publish(new ModSelectedEvent(modSelected));
                 });
-    }
-
-    private void resetList()
-    {
-        this.controllers.clear();
-        this.listMod.getItems().clear();
     }
 
     private void fillMods()

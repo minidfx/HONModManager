@@ -8,12 +8,20 @@ import com.honmodmanager.models.ModImpl;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.models.contracts.Version;
 import com.honmodmanager.services.contracts.GameInformation;
+import com.honmodmanager.services.contracts.ModIdBuilder;
 import com.honmodmanager.services.contracts.ModReader;
 import com.honmodmanager.services.contracts.VersionParser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,12 +55,20 @@ public final class ModReaderImpl implements ModReader
 
     private final GameInformation gameInformation;
     private final VersionParser versionParser;
+    private final DateFormat dateFormat;
+    private final ModIdBuilder modIdBuilder;
 
     @Autowired
-    public ModReaderImpl(GameInformation gameInformation, VersionParser versionParser)
+    public ModReaderImpl(GameInformation gameInformation,
+                         VersionParser versionParser,
+                         ModIdBuilder modIdBuilder)
     {
         this.gameInformation = gameInformation;
         this.versionParser = versionParser;
+
+        // FIXME: Configure spring to inject SimpleDateFormat with DateFormat as class.
+        this.dateFormat = new SimpleDateFormat();
+        this.modIdBuilder = modIdBuilder;
     }
 
     @Override
@@ -98,8 +114,7 @@ public final class ModReaderImpl implements ModReader
     private void readModFolder(List<Mod> modsApplied, Subscriber<? super Mod> subscriber) throws ModsFolderNotFoundException,
                                                                                                  IOException,
                                                                                                  ParserConfigurationException,
-                                                                                                 SAXException,
-                                                                                                 ParseException
+                                                                                                 SAXException
     {
         File modsFolder = this.gameInformation.getModsFolder().toFile();
 
@@ -121,7 +136,7 @@ public final class ModReaderImpl implements ModReader
                 Mod mod = this.readModFile(modFile, modsApplied);
                 subscriber.onNext(mod);
             }
-            catch (MalformedModException e)
+            catch (MalformedModException | URISyntaxException | ParseException e)
             {
                 LOG.log(Level.WARNING, e.getMessage(), e);
             }
@@ -132,7 +147,8 @@ public final class ModReaderImpl implements ModReader
                                                                         MalformedModException,
                                                                         ParserConfigurationException,
                                                                         SAXException,
-                                                                        ParseException
+                                                                        ParseException,
+                                                                        URISyntaxException
     {
         try (ZipFile zip = new ZipFile(fileMod))
         {
@@ -224,7 +240,8 @@ public final class ModReaderImpl implements ModReader
                                                                                    SAXException,
                                                                                    IOException,
                                                                                    MalformedModException,
-                                                                                   ParseException
+                                                                                   ParseException,
+                                                                                   URISyntaxException
     {
         DocumentBuilder documentBuiler = documentBuilderFactory.newDocumentBuilder();
         Document xml = documentBuiler.parse(zip.getInputStream(entry));
@@ -236,32 +253,41 @@ public final class ModReaderImpl implements ModReader
 
         Element modificationElement = (Element) nodes.item(0);
 
-        String modName = modificationElement.getAttribute("name").trim();
-        String modId = ModImpl.buildId(modName);
+        String modName = modificationElement.getAttribute("name");
+        String modId = this.modIdBuilder.build(modName);
 
-        String appVersion = modificationElement.getAttribute("appversion");
-        String mmVersion = modificationElement.getAttribute("mmversion");
+        Version appVersion = this.versionParser.Parse(modificationElement.getAttribute("appversion"));
+        Version mmVersion = this.versionParser.Parse(modificationElement.getAttribute("mmversion"));
         Version modVersion = this.versionParser.Parse(modificationElement.getAttribute("version"));
 
-        String modDate = modificationElement.getAttribute("date");
+        String xmlModDate = modificationElement.getAttribute("date");
+        Date modDate = null;
+
+        if (!xmlModDate.isEmpty())
+            modDate = this.dateFormat.parse(xmlModDate);
+
         String modDescription = modificationElement.getAttribute("description");
-        String modAuthor = modificationElement.getAttribute("author").trim();
-        String modWebLink = modificationElement.getAttribute("weblink");
-        String updateCheckURL = modificationElement.getAttribute("updatecheckurl");
-        String updateDownloadURL = modificationElement.getAttribute("updatedownloadurl");
+        String modAuthor = modificationElement.getAttribute("author");
+        URI modWebLink = new URI(modificationElement.getAttribute("weblink"));
+        URL updateURL = new URL(modificationElement.getAttribute("updatecheckurl"));
+        URL downloadURL = new URL(modificationElement.getAttribute("updatedownloadurl"));
 
         Mod modApplied = modsApplied.singleOrDefault(m ->
                 m.getId().equals(modId));
 
-        if (modApplied != null)
-        {
-            return modApplied;
-        }
+        Mod mod = modApplied == null ? new ModImpl(modName, modVersion, false) : modApplied;
 
-        Mod newMod = new ModImpl(modName, modVersion, false);
+        if (modDate != null)
+            mod.setDate(modDate);
 
-        newMod.setDescription(modDescription);
+        mod.setDescription(modDescription);
+        mod.setAuthor(modAuthor);
+        mod.setWebLink(modWebLink);
+        mod.setUpdateURL(updateURL);
+        mod.setDownloadURL(downloadURL);
+        mod.setModManagerVersion(mmVersion);
+        mod.setGameVersion(appVersion);
 
-        return newMod;
+        return mod;
     }
 }

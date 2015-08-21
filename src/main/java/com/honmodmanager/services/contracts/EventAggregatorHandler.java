@@ -7,5 +7,5 @@ package com.honmodmanager.services.contracts;
  */
 public interface EventAggregatorHandler<TEvent>
 {
-    void handle(TEvent event);
+    void handleEvent(TEvent event);
 }

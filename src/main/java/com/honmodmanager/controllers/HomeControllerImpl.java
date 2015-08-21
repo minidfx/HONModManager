@@ -115,14 +115,18 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     }
 
     @Override
-    public void handle(ModSelectedEvent event)
+    public void handleEvent(ModSelectedEvent event)
     {
         ModDetailsController controller = this.modDetailsControllerFactory.Create(event.getModel());
 
         try
         {
             FXMLLoader modDetailsControllerFxmlLoader = controller.loadView("/views/ModDetailsView.fxml");
-            this.centerPane.setCenter(modDetailsControllerFxmlLoader.getRoot());
+
+            this.executeOnUIThread(() ->
+            {
+                this.centerPane.setCenter(modDetailsControllerFxmlLoader.getRoot());
+            });
         }
         catch (IOException ex)
         {
