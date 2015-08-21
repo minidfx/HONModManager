@@ -7,7 +7,7 @@ import javafx.stage.Stage;
  *
  * @author Burgy Benjamin
  */
-public interface JavaFxStarter
+public interface Bootstrapper
 {
-    void show(Stage stage) throws IOException;
+    void run(Stage stage) throws IOException;
 }

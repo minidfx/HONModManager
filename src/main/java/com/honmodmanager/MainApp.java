@@ -1,11 +1,10 @@
 package com.honmodmanager;
 
-import com.honmodmanager.services.JavaFxStarterImpl;
-import com.honmodmanager.services.contracts.JavaFxStarter;
+import com.honmodmanager.services.BootstrapperImpl;
+import com.honmodmanager.services.contracts.Bootstrapper;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.stage.Stage;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  *
@@ -13,14 +12,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 final public class MainApp extends Application
 {
-    private static ClassPathXmlApplicationContext springApplicationContext;
-    private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(MainApp.class.getName());
-
     @Override
     public void start(Stage stage) throws IOException
     {
-        JavaFxStarter starter = new JavaFxStarterImpl(MainApp.springApplicationContext);
-        starter.show(stage);
+        Bootstrapper bootstrapper = new BootstrapperImpl();
+        bootstrapper.run(stage);
     }
 
     /**
@@ -28,11 +24,6 @@ final public class MainApp extends Application
      */
     public static void main(String[] args)
     {
-        LOG.info("Starting application ...");
-
-        // Create the Spring context
-        springApplicationContext = new ClassPathXmlApplicationContext("/spring/applicationContext.xml");
-
         launch(args);
     }
 }

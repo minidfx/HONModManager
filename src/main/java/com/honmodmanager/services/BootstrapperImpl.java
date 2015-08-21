@@ -3,7 +3,7 @@ package com.honmodmanager.services;
 import com.honmodmanager.controllers.contracts.HomeController;
 import com.honmodmanager.models.SizeImpl;
 import com.honmodmanager.models.contracts.Size;
-import com.honmodmanager.services.contracts.JavaFxStarter;
+import com.honmodmanager.services.contracts.Bootstrapper;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -13,15 +13,15 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public final class JavaFxStarterImpl implements JavaFxStarter
+public final class BootstrapperImpl implements Bootstrapper
 {
-    private static final Logger LOG = Logger.getLogger(JavaFxStarterImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(BootstrapperImpl.class.getName());
     private final ClassPathXmlApplicationContext springApplicationContext;
     private final Preferences userPreferences;
 
-    public JavaFxStarterImpl(ClassPathXmlApplicationContext classPathXmlApplicationContext)
+    public BootstrapperImpl()
     {
-        this.springApplicationContext = classPathXmlApplicationContext;
+        this.springApplicationContext = new ClassPathXmlApplicationContext("/spring/applicationContext.xml");
         this.userPreferences = Preferences.userRoot().node("HoNModManager");
     }
 
@@ -57,8 +57,9 @@ public final class JavaFxStarterImpl implements JavaFxStarter
     }
 
     @Override
-    public void show(Stage stage) throws IOException
+    public void run(Stage stage) throws IOException
     {
+        LOG.info("Starting application ...");
         LOG.info("Resolving and initializing the HomeController ...");
 
         // Create the main controller
