@@ -204,21 +204,23 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         Observable<Pair<Mod, File>> mergedObservable = Observable.merge(observables, Schedulers.io());
 
         mergedObservable.subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.immediate())
                 .subscribe(r ->
                         {
                             this.eventAggregator.Publish(new ModUpdatedEvent(r.getKey(), UpdateRowDisplayAction.Updated));
                 }, e ->
                            {
-                               if (e instanceof ModUpdateException)
-                               {
-                                   ModUpdateException exception = (ModUpdateException) e;
+                               LOG.log(Level.SEVERE, e.getMessage(), e);
 
-                                   this.eventAggregator.Publish(new ModUpdatedEvent(exception.getMod(),
+                               for (Mod mod : mods)
+                               {
+                                   this.eventAggregator.Publish(new ModUpdatedEvent(mod,
                                                                                     UpdateRowDisplayAction.UpdateFailed));
                                }
 
-                               LOG.log(Level.SEVERE, e.getMessage(), e);
+                               this.executeOnUIThread(() ->
+                                       {
+                                           this.updateAllButton.setDisable(false);
+                               });
                 },
                            () ->
                            {

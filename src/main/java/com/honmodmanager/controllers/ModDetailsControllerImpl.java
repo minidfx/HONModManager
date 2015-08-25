@@ -3,9 +3,11 @@ package com.honmodmanager.controllers;
 import com.honmodmanager.controllers.contracts.ModDetailsController;
 import com.honmodmanager.events.ModUpdatedEvent;
 import com.honmodmanager.events.UpdateRowDisplayAction;
+import com.honmodmanager.exceptions.ModActivationException;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.EventAggregator;
 import com.honmodmanager.services.contracts.EventAggregatorHandler;
+import com.honmodmanager.services.contracts.ModEnabler;
 import com.honmodmanager.services.contracts.ModUpdater;
 import com.honmodmanager.services.contracts.PlatformInteraction;
 import java.io.IOException;
@@ -64,17 +66,23 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
     private Label date;
 
     @FXML
+    private Label errorMessage;
+
+    @FXML
     private Button updateButton;
+    private final ModEnabler modEnabler;
 
     public ModDetailsControllerImpl(Mod model,
                                     PlatformInteraction platformInteraction,
                                     EventAggregator eventAggregator,
-                                    ModUpdater modUpdater)
+                                    ModUpdater modUpdater,
+                                    ModEnabler modEnabler)
     {
         this.model = model;
         this.platformInteraction = platformInteraction;
         this.eventAggregator = eventAggregator;
         this.modUpdater = modUpdater;
+        this.modEnabler = modEnabler;
     }
 
     @Override
@@ -87,6 +95,7 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
         this.downloadURL.setText(this.model.getDownloadAddress().toString());
         this.updateURL.setText(this.model.getVersionAddress().toString());
         this.enabled.setSelected(this.model.isEnabled());
+        this.errorMessage.setVisible(false);
 
         Date modDate = this.model.getDate();
 
@@ -155,7 +164,6 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
 
         this.modUpdater.Update(this.model)
                 .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.computation())
                 .subscribe(x ->
                         {
                             this.eventAggregator.Publish(new ModUpdatedEvent(x.getKey(), UpdateRowDisplayAction.Updated));
@@ -174,9 +182,25 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
     private void handleEnableAction(ActionEvent event)
     {
         boolean isEnabled = this.enabled.isSelected();
+        Mod mod = this.model;
 
-        this.model.enabled(isEnabled);
-        this.eventAggregator.Publish(new ModUpdatedEvent(this.model, UpdateRowDisplayAction.EnableDisable));
+        try
+        {
+            if (isEnabled)
+                this.modEnabler.enable(mod);
+            else
+                this.modEnabler.disable(mod);
+
+            this.eventAggregator.Publish(new ModUpdatedEvent(mod, UpdateRowDisplayAction.EnableDisable));
+        }
+        catch (ModActivationException ex)
+        {
+            LOG.log(Level.WARNING, ex.getMessage(), ex);
+
+            this.errorMessage.setVisible(true);
+            this.errorMessage.setText(ex.getMessage());
+            this.enabled.setSelected(!isEnabled);
+        }
     }
 
     @Override

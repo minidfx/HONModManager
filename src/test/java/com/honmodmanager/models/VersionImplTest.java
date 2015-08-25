@@ -101,7 +101,6 @@ public final class VersionImplTest extends TestCase
     {
         Version[] smallerVersions = new Version[]
         {
-            new VersionImpl(0, 0, 0, 0),
             new VersionImpl(0, 1, 0, 0),
             new VersionImpl(0, 0, 1, 0),
             new VersionImpl(0, 0, 0, 1)

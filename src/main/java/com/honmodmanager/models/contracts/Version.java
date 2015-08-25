@@ -50,4 +50,12 @@ public interface Version
      * @return
      */
     boolean lowerThan(Version version);
+
+    /**
+     * Determines whether the version is null, it means that you can't compare
+     * this version with another.
+     *
+     * @return
+     */
+    boolean isNull();
 }

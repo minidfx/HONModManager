@@ -4,6 +4,7 @@ import com.honmodmanager.controllers.contracts.ModDetailsController;
 import com.honmodmanager.controllers.contracts.ModDetailsControllerFactory;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.EventAggregator;
+import com.honmodmanager.services.contracts.ModEnabler;
 import com.honmodmanager.services.contracts.ModUpdater;
 import com.honmodmanager.services.contracts.PlatformInteraction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +18,18 @@ public class ModDetailsControllerFactoryImpl implements ModDetailsControllerFact
     private final PlatformInteraction platformInteraction;
     private final EventAggregator eventAggregator;
     private final ModUpdater modUpdater;
+    private final ModEnabler modEnabler;
 
     @Autowired
     public ModDetailsControllerFactoryImpl(PlatformInteraction platformInteraction,
                                            EventAggregator eventAggregator,
-                                           ModUpdater modUpdater)
+                                           ModUpdater modUpdater,
+                                           ModEnabler modEnabler)
     {
         this.platformInteraction = platformInteraction;
         this.eventAggregator = eventAggregator;
         this.modUpdater = modUpdater;
+        this.modEnabler = modEnabler;
     }
 
     @Override
@@ -34,6 +38,7 @@ public class ModDetailsControllerFactoryImpl implements ModDetailsControllerFact
         return new ModDetailsControllerImpl(model,
                                             this.platformInteraction,
                                             this.eventAggregator,
-                                            this.modUpdater);
+                                            this.modUpdater,
+                                            this.modEnabler);
     }
 }

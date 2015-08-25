@@ -8,6 +8,7 @@ public final class VersionImpl implements Version
     private final int minor;
     private final int fix;
     private final int build;
+    private final boolean isNull;
 
     public VersionImpl(int major, int minor, int fix, int build)
     {
@@ -15,6 +16,8 @@ public final class VersionImpl implements Version
         this.minor = minor;
         this.fix = fix;
         this.build = build;
+
+        this.isNull = major == 0 && minor == 0 && fix == 0 && build == 0;
     }
 
     @Override
@@ -50,6 +53,9 @@ public final class VersionImpl implements Version
     @Override
     public boolean greaterThan(Version version)
     {
+        if (this.isNull || version.isNull())
+            throw new UnsupportedOperationException("Cannot compare a null version.");
+
         int foreignVersion = Integer.valueOf(String.format("%d%d%d%d",
                                                            version.getMajor(),
                                                            version.getMinor(),
@@ -67,6 +73,9 @@ public final class VersionImpl implements Version
     @Override
     public boolean lowerThan(Version version)
     {
+        if (this.isNull || version.isNull())
+            throw new UnsupportedOperationException("Cannot compare a null version.");
+
         int foreignVersion = Integer.valueOf(String.format("%d%d%d%d",
                                                            version.getMajor(),
                                                            version.getMinor(),
@@ -79,5 +88,11 @@ public final class VersionImpl implements Version
                                                                   this.getBuild()));
 
         return currentVersionInteger < foreignVersion;
+    }
+
+    @Override
+    public boolean isNull()
+    {
+        return this.isNull;
     }
 }

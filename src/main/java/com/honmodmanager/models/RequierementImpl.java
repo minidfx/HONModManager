@@ -11,6 +11,7 @@ public final class RequierementImpl implements Requierement
     public RequierementImpl(Version minium)
     {
         this.minium = minium;
+        this.maximum = minium;
     }
 
     public RequierementImpl(Version minium, Version maximum)
