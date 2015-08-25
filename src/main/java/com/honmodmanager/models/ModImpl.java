@@ -3,9 +3,10 @@ package com.honmodmanager.models;
 import com.github.jlinqer.collections.Dictionary;
 import com.github.jlinqer.collections.List;
 import com.honmodmanager.models.contracts.Mod;
+import com.honmodmanager.models.contracts.Requierement;
 import com.honmodmanager.models.contracts.Version;
 import java.net.URI;
-import java.net.URL;
+import java.nio.file.Path;
 import java.util.Date;
 import javafx.scene.image.Image;
 
@@ -24,11 +25,12 @@ public final class ModImpl implements Mod
     public String description;
     private String author;
     private URI webLink;
-    private URL webUpdateURL;
-    private URL downloadURL;
+    private URI versionAddress;
+    private URI downloadAddress;
     private Version modVersion;
-    private Version gameVersion;
+    private Requierement gameVersion;
     private String modId;
+    private Path filePath;
 
     public ModImpl(String name, Version version, boolean isEnabled)
     {
@@ -127,27 +129,27 @@ public final class ModImpl implements Mod
     }
 
     @Override
-    public void setUpdateURL(URL url)
+    public void setVersionAddress(URI uri)
     {
-        this.webUpdateURL = url;
+        this.versionAddress = uri;
     }
 
     @Override
-    public URL getUpdateURL()
+    public URI getVersionAddress()
     {
-        return this.webUpdateURL;
+        return this.versionAddress;
     }
 
     @Override
-    public URL getDownloadURL()
+    public URI getDownloadAddress()
     {
-        return this.downloadURL;
+        return this.downloadAddress;
     }
 
     @Override
-    public void setDownloadURL(URL value)
+    public void setDownloadAddress(URI value)
     {
-        this.downloadURL = value;
+        this.downloadAddress = value;
     }
 
     @Override
@@ -163,13 +165,13 @@ public final class ModImpl implements Mod
     }
 
     @Override
-    public Version getGameVersion()
+    public Requierement getGameVersion()
     {
         return this.gameVersion;
     }
 
     @Override
-    public void setGameVersion(Version value)
+    public void setGameVersion(Requierement value)
     {
         this.gameVersion = value;
     }
@@ -232,5 +234,17 @@ public final class ModImpl implements Mod
     public void enabled(boolean value)
     {
         this.isEnabled = value;
+    }
+
+    @Override
+    public Path getFilePath()
+    {
+        return this.filePath;
+    }
+
+    @Override
+    public void setFilePath(Path value)
+    {
+        this.filePath = value;
     }
 }

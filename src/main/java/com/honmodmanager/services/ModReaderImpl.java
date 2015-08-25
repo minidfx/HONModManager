@@ -6,10 +6,12 @@ import com.honmodmanager.exceptions.MalformedZipCommentsException;
 import com.honmodmanager.exceptions.ModsFolderNotFoundException;
 import com.honmodmanager.models.ModImpl;
 import com.honmodmanager.models.contracts.Mod;
+import com.honmodmanager.models.contracts.Requierement;
 import com.honmodmanager.models.contracts.Version;
 import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.ModIdBuilder;
 import com.honmodmanager.services.contracts.ModReader;
+import com.honmodmanager.services.contracts.RequierementParser;
 import com.honmodmanager.services.contracts.VersionParser;
 import com.joestelmach.natty.Parser;
 import java.io.File;
@@ -17,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Enumeration;
@@ -54,17 +56,20 @@ public final class ModReaderImpl implements ModReader
     private final GameInformation gameInformation;
     private final VersionParser versionParser;
     private final Parser dateParser;
+    private final RequierementParser requierementParser;
     private final ModIdBuilder modIdBuilder;
 
     @Autowired
     public ModReaderImpl(GameInformation gameInformation,
                          VersionParser versionParser,
+                         RequierementParser requierementParser,
                          ModIdBuilder modIdBuilder)
     {
         this.gameInformation = gameInformation;
         this.versionParser = versionParser;
 
         this.dateParser = new Parser();
+        this.requierementParser = requierementParser;
         this.modIdBuilder = modIdBuilder;
     }
 
@@ -131,6 +136,8 @@ public final class ModReaderImpl implements ModReader
             try
             {
                 Mod mod = this.readModFile(modFile, modsApplied);
+                mod.setFilePath(Paths.get(modFile.getAbsolutePath()));
+
                 subscriber.onNext(mod);
             }
             catch (MalformedModException | URISyntaxException | ParseException e)
@@ -229,7 +236,7 @@ public final class ModReaderImpl implements ModReader
 
         String name = matcher.group(1);
         String id = this.modIdBuilder.build(name);
-        Version version = this.versionParser.Parse(matcher.group(2));
+        Version version = this.versionParser.parse(matcher.group(2));
 
         Mod newMod = new ModImpl(line, version, true);
         newMod.setId(id);
@@ -257,9 +264,9 @@ public final class ModReaderImpl implements ModReader
         String modName = modificationElement.getAttribute("name");
         String modId = this.modIdBuilder.build(modName);
 
-        Version appVersion = this.versionParser.Parse(modificationElement.getAttribute("appversion"));
-        Version mmVersion = this.versionParser.Parse(modificationElement.getAttribute("mmversion"));
-        Version modVersion = this.versionParser.Parse(modificationElement.getAttribute("version"));
+        Requierement appVersion = this.requierementParser.parse(modificationElement.getAttribute("appversion"));
+        Version mmVersion = this.versionParser.parse(modificationElement.getAttribute("mmversion"));
+        Version modVersion = this.versionParser.parse(modificationElement.getAttribute("version"));
 
         String xmlModDate = modificationElement.getAttribute("date");
         Date modDate = null;
@@ -270,8 +277,8 @@ public final class ModReaderImpl implements ModReader
         String modDescription = modificationElement.getAttribute("description");
         String modAuthor = modificationElement.getAttribute("author");
         URI modWebLink = new URI(modificationElement.getAttribute("weblink"));
-        URL updateURL = new URL(modificationElement.getAttribute("updatecheckurl"));
-        URL downloadURL = new URL(modificationElement.getAttribute("updatedownloadurl"));
+        URI versionAddress = new URI(modificationElement.getAttribute("updatecheckurl"));
+        URI downloadAddress = new URI(modificationElement.getAttribute("updatedownloadurl"));
 
         Mod modApplied = modsApplied.singleOrDefault(m ->
                 m.getId().equals(modId));
@@ -285,8 +292,8 @@ public final class ModReaderImpl implements ModReader
         mod.setDescription(modDescription);
         mod.setAuthor(modAuthor);
         mod.setWebLink(modWebLink);
-        mod.setUpdateURL(updateURL);
-        mod.setDownloadURL(downloadURL);
+        mod.setVersionAddress(versionAddress);
+        mod.setDownloadAddress(downloadAddress);
         mod.setModManagerVersion(mmVersion);
         mod.setGameVersion(appVersion);
 
@@ -314,7 +321,7 @@ public final class ModReaderImpl implements ModReader
         {
             Element element = (Element) applyBefore.item(k);
             String applyBeforeModId = element.getAttribute("name");
-            Version applyBeforeVersion = this.versionParser.Parse(element.getAttribute("version"));
+            Version applyBeforeVersion = this.versionParser.parse(element.getAttribute("version"));
 
             mod.addApplyBefore(applyBeforeModId, applyBeforeVersion);
         }
@@ -324,7 +331,7 @@ public final class ModReaderImpl implements ModReader
         {
             Element element = (Element) applyAfter.item(l);
             String applyAfterModId = element.getAttribute("name");
-            Version applyAfterVersion = this.versionParser.Parse(element.getAttribute("version"));
+            Version applyAfterVersion = this.versionParser.parse(element.getAttribute("version"));
 
             mod.addApplyAfter(applyAfterModId, applyAfterVersion);
         }

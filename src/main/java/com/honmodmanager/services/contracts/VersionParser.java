@@ -16,5 +16,5 @@ public interface VersionParser
      * @param version
      * @return
      */
-    Version Parse(String version) throws ParseException;
+    Version parse(String version) throws ParseException;
 }

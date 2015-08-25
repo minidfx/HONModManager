@@ -1,10 +1,11 @@
 package com.honmodmanager.services.contracts;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import rx.Observable;
+import java.net.URL;
 
 /**
  *
@@ -17,8 +18,14 @@ public interface ModDownloader
      *
      * @param uri
      * @param destination
-     * @return
      * @throws java.net.MalformedURLException
+     * @throws java.io.FileNotFoundException
      */
-    Observable<File> Download(URI uri, String destination) throws MalformedURLException, IOException;
+    void download(URI uri, File destination) throws MalformedURLException,
+                                                    FileNotFoundException,
+                                                    IOException;
+
+    byte[] download(URL url) throws MalformedURLException,
+                                    FileNotFoundException,
+                                    IOException;
 }

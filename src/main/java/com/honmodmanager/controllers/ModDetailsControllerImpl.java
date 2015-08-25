@@ -1,20 +1,28 @@
 package com.honmodmanager.controllers;
 
 import com.honmodmanager.controllers.contracts.ModDetailsController;
-import com.honmodmanager.events.ModEnabledEvent;
+import com.honmodmanager.events.ModUpdatedEvent;
+import com.honmodmanager.events.UpdateRowDisplayAction;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.EventAggregator;
+import com.honmodmanager.services.contracts.EventAggregatorHandler;
+import com.honmodmanager.services.contracts.ModUpdater;
 import com.honmodmanager.services.contracts.PlatformInteraction;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
+import rx.schedulers.Schedulers;
 
 /**
  * The controller for communicating with the view containing the details of the
@@ -22,43 +30,51 @@ import javafx.scene.control.ToggleButton;
  *
  * @author Burgy Benjamin
  */
-public final class ModDetailsControllerImpl extends FXmlControllerBase implements ModDetailsController
+public final class ModDetailsControllerImpl extends FXmlControllerBase implements ModDetailsController,
+                                                                                  EventAggregatorHandler<ModUpdatedEvent>
 {
     private final Mod model;
     private final PlatformInteraction platformInteraction;
     private final EventAggregator eventAggregator;
+    private static final Logger LOG = Logger.getLogger(ModDetailsControllerImpl.class.getName());
+    private final ModUpdater modUpdater;
 
     @FXML
-    public Label title;
+    private Label title;
 
     @FXML
-    public Label version;
+    private Label version;
 
     @FXML
-    public Label description;
+    private Label description;
 
     @FXML
-    public Hyperlink webLink;
+    private Hyperlink webLink;
 
     @FXML
-    public Hyperlink downloadURL;
+    private Hyperlink downloadURL;
 
     @FXML
-    public Hyperlink updateURL;
+    private Hyperlink updateURL;
 
     @FXML
-    public ToggleButton enabled;
+    private ToggleButton enabled;
 
     @FXML
-    public Label date;
+    private Label date;
+
+    @FXML
+    private Button updateButton;
 
     public ModDetailsControllerImpl(Mod model,
                                     PlatformInteraction platformInteraction,
-                                    EventAggregator eventAggregator)
+                                    EventAggregator eventAggregator,
+                                    ModUpdater modUpdater)
     {
         this.model = model;
         this.platformInteraction = platformInteraction;
         this.eventAggregator = eventAggregator;
+        this.modUpdater = modUpdater;
     }
 
     @Override
@@ -68,8 +84,8 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
         this.version.setText(this.model.getVersion().toString());
         this.description.setText(this.model.getDescription());
         this.webLink.setText(this.model.getWebLink().toString());
-        this.downloadURL.setText(this.model.getDownloadURL().toString());
-        this.updateURL.setText(this.model.getUpdateURL().toString());
+        this.downloadURL.setText(this.model.getDownloadAddress().toString());
+        this.updateURL.setText(this.model.getVersionAddress().toString());
         this.enabled.setSelected(this.model.isEnabled());
 
         Date modDate = this.model.getDate();
@@ -78,30 +94,80 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
             this.date.setText(modDate.toString());
         else
             this.date.setText("");
+
+        this.eventAggregator.Subscribe(this);
+    }
+
+    @Override
+    public void release()
+    {
+        super.release();
+
+        this.eventAggregator.unsubscribe(this);
     }
 
     @FXML
-    private void handleWebLinkAction(ActionEvent event) throws IOException, URISyntaxException
+    private void handleWebLinkAction(ActionEvent event)
     {
-        this.platformInteraction.openLink(this.model.getWebLink().toURL());
+        try
+        {
+            this.platformInteraction.openLink(this.model.getWebLink());
+        }
+        catch (IOException ex)
+        {
+            LOG.log(Level.WARNING, ex.getMessage(), ex);
+        }
     }
 
     @FXML
-    private void handleDownloadAction(ActionEvent event) throws IOException, URISyntaxException
+    private void handleDownloadAction(ActionEvent event)
     {
-        this.platformInteraction.openLink(this.model.getDownloadURL());
+        try
+        {
+            this.platformInteraction.openLink(this.model.getDownloadAddress());
+        }
+        catch (IOException ex)
+        {
+            LOG.log(Level.WARNING, ex.getMessage(), ex);
+        }
     }
 
     @FXML
-    private void handleUpdateAction(ActionEvent event) throws IOException, URISyntaxException
+    private void handleUpdateAction(ActionEvent event)
     {
-        this.platformInteraction.openLink(this.model.getUpdateURL());
+        try
+        {
+            this.platformInteraction.openLink(this.model.getVersionAddress());
+        }
+        catch (IOException ex)
+        {
+            LOG.log(Level.WARNING, ex.getMessage(), ex);
+        }
     }
 
     @FXML
-    private void handleUpdateButtonAction(ActionEvent event)
+    private void handleUpdateButtonAction(ActionEvent event) throws IOException,
+                                                                    MalformedURLException,
+                                                                    ParseException
     {
-        throw new UnsupportedOperationException();
+        this.updateButton.setDisable(true);
+        this.eventAggregator.Publish(new ModUpdatedEvent(this.model, UpdateRowDisplayAction.Updating));
+
+        this.modUpdater.Update(this.model)
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.computation())
+                .subscribe(x ->
+                        {
+                            this.eventAggregator.Publish(new ModUpdatedEvent(x.getKey(), UpdateRowDisplayAction.Updated));
+                },
+                           e ->
+                           {
+                               LOG.log(Level.SEVERE, e.getMessage(), e);
+                           },
+                           () ->
+                           {
+                               this.updateButton.setDisable(false);
+                           });
     }
 
     @FXML
@@ -110,6 +176,31 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
         boolean isEnabled = this.enabled.isSelected();
 
         this.model.enabled(isEnabled);
-        this.eventAggregator.Publish(new ModEnabledEvent(this.model));
+        this.eventAggregator.Publish(new ModUpdatedEvent(this.model, UpdateRowDisplayAction.EnableDisable));
+    }
+
+    @Override
+    public void handleEvent(ModUpdatedEvent event)
+    {
+        if (event.getMod() == this.model)
+        {
+            Runnable updateUI = null;
+
+            switch (event.getAction())
+            {
+                case Updating:
+                    updateUI = () -> this.updateButton.setDisable(true);
+                    break;
+
+                case Updated:
+                    updateUI = () -> this.updateButton.setDisable(false);
+                    break;
+            }
+
+            if (updateUI != null)
+            {
+                this.executeOnUIThread(updateUI);
+            }
+        }
     }
 }

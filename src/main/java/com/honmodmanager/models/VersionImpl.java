@@ -46,4 +46,38 @@ public final class VersionImpl implements Version
     {
         return String.format("%d.%d.%d.%d", this.major, this.minor, this.fix, this.build);
     }
+
+    @Override
+    public boolean greaterThan(Version version)
+    {
+        int foreignVersion = Integer.valueOf(String.format("%d%d%d%d",
+                                                           version.getMajor(),
+                                                           version.getMinor(),
+                                                           version.getFix(),
+                                                           version.getBuild()));
+        int currentVersionInteger = Integer.valueOf(String.format("%d%d%d%d",
+                                                                  this.getMajor(),
+                                                                  this.getMinor(),
+                                                                  this.getFix(),
+                                                                  this.getBuild()));
+
+        return currentVersionInteger > foreignVersion;
+    }
+
+    @Override
+    public boolean lowerThan(Version version)
+    {
+        int foreignVersion = Integer.valueOf(String.format("%d%d%d%d",
+                                                           version.getMajor(),
+                                                           version.getMinor(),
+                                                           version.getFix(),
+                                                           version.getBuild()));
+        int currentVersionInteger = Integer.valueOf(String.format("%d%d%d%d",
+                                                                  this.getMajor(),
+                                                                  this.getMinor(),
+                                                                  this.getFix(),
+                                                                  this.getBuild()));
+
+        return currentVersionInteger < foreignVersion;
+    }
 }

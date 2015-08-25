@@ -11,6 +11,12 @@ import javafx.fxml.FXMLLoader;
 public abstract class FXmlControllerBase implements FXmlController
 {
     protected FXMLLoader fxmlLoader;
+    private boolean isReleased;
+
+    public FXmlControllerBase()
+    {
+        this.isReleased = false;
+    }
 
     @Override
     public FXMLLoader loadView(String viewPath) throws IOException
@@ -22,5 +28,17 @@ public abstract class FXmlControllerBase implements FXmlController
     public FXMLLoader getFXMLoader()
     {
         return this.fxmlLoader;
+    }
+
+    @Override
+    public void release()
+    {
+        this.isReleased = true;
+    }
+
+    @Override
+    public boolean isReleased()
+    {
+        return this.isReleased;
     }
 }

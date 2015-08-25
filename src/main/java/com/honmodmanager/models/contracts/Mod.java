@@ -3,7 +3,7 @@ package com.honmodmanager.models.contracts;
 import com.github.jlinqer.collections.Dictionary;
 import com.github.jlinqer.collections.List;
 import java.net.URI;
-import java.net.URL;
+import java.nio.file.Path;
 import java.util.Date;
 import javafx.scene.image.Image;
 
@@ -112,32 +112,32 @@ public interface Mod
     void setWebLink(URI value);
 
     /**
-     * Sets the URL to update the mod.
+     * Sets the URI of the page containing the version of the mod.
      *
      * @param value
      */
-    void setUpdateURL(URL value);
+    void setVersionAddress(URI value);
 
     /**
-     * Gets the URL to update the mod.
+     * Gets the URI of the page containing the version of the mod.
      *
      * @return
      */
-    URL getUpdateURL();
+    URI getVersionAddress();
 
     /**
      * Gets the URL to download the mod the first time.
      *
      * @return
      */
-    URL getDownloadURL();
+    URI getDownloadAddress();
 
     /**
      * Sets the URL to download the mod the first time.
      *
      * @param value
      */
-    void setDownloadURL(URL value);
+    void setDownloadAddress(URI value);
 
     /**
      * Gets the version of the mod manager.
@@ -158,14 +158,14 @@ public interface Mod
      *
      * @return
      */
-    Version getGameVersion();
+    Requierement getGameVersion();
 
     /**
      * Sets the version of the game.
      *
      * @param value
      */
-    void setGameVersion(Version value);
+    void setGameVersion(Requierement value);
 
     /**
      * Gets the version of the mod.
@@ -173,6 +173,10 @@ public interface Mod
      * @return
      */
     Version getVersion();
+
+    Path getFilePath();
+
+    void setFilePath(Path value);
 
     List<String> getIncompatibillities();
 

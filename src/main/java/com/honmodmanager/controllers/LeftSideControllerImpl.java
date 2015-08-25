@@ -5,11 +5,10 @@ import com.github.jlinqer.collections.List;
 import com.honmodmanager.controllers.contracts.LeftModRowController;
 import com.honmodmanager.controllers.contracts.LeftModRowControllerFactory;
 import com.honmodmanager.controllers.contracts.LeftSideController;
-import com.honmodmanager.events.ModEnabledEvent;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.EventAggregator;
-import com.honmodmanager.services.contracts.EventAggregatorHandler;
 import com.honmodmanager.services.contracts.ModReader;
+import com.honmodmanager.storage.contracts.Storage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -47,17 +46,20 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
 
     @FXML
     public ListView<Parent> listMod;
+    private final Storage storage;
 
     @Autowired
     public LeftSideControllerImpl(ModReader modReader,
                                   LeftModRowControllerFactory leftModRowControllerFactory,
-                                  EventAggregator eventAggregator)
+                                  EventAggregator eventAggregator,
+                                  Storage storage)
     {
         this.controllers = new List<>();
 
         this.modReader = modReader;
         this.leftModRowControllerFactory = leftModRowControllerFactory;
         this.eventAggregator = eventAggregator;
+        this.storage = storage;
     }
 
     @Override
@@ -65,6 +67,14 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
     {
         this.fillMods();
         this.listenSelection();
+    }
+
+    @Override
+    public void release()
+    {
+        super.release();
+
+        this.eventAggregator.unsubscribe(this);
     }
 
     private void listenSelection()
@@ -107,6 +117,9 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
                 {
                     this.listMod.getItems().add(view);
                 });
+
+                // Add the mod into the storage
+                this.storage.addMod(m);
             }
             catch (IOException ex)
             {

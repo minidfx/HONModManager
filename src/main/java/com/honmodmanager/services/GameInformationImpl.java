@@ -144,7 +144,7 @@ public final class GameInformationImpl implements GameInformation
                     }
                 }
 
-                Version version = this.versionParser.Parse(new String(secondPass));
+                Version version = this.versionParser.parse(new String(secondPass));
 
                 observer.onNext(version);
                 observer.onCompleted();
@@ -176,7 +176,7 @@ public final class GameInformationImpl implements GameInformation
         if (!matcher.find())
             throw new ParseException("Cannot parse the version in the comments", 0);
 
-        return this.versionParser.Parse(matcher.group(1));
+        return this.versionParser.parse(matcher.group(1));
     }
 
     @Override

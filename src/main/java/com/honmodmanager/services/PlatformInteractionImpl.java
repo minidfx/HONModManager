@@ -3,8 +3,7 @@ package com.honmodmanager.services;
 import com.honmodmanager.services.contracts.PlatformInteraction;
 import java.awt.Desktop;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Path;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -21,9 +20,9 @@ public final class PlatformInteractionImpl implements PlatformInteraction
     }
 
     @Override
-    public void openLink(URL address) throws IOException, URISyntaxException
+    public void openLink(URI address) throws IOException
     {
-        this.desktop.browse(address.toURI());
+        this.desktop.browse(address);
     }
 
     @Override

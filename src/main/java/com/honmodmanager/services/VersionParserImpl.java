@@ -16,8 +16,11 @@ import org.springframework.stereotype.Service;
 public final class VersionParserImpl implements VersionParser
 {
     @Override
-    public Version Parse(String version) throws ParseException
+    public Version parse(String version) throws ParseException
     {
+        if (version.equals("*") || version.isEmpty())
+            return new VersionImpl(0, 0, 0, 0);
+
         Pattern regex = Pattern.compile("(\\d+).?", Pattern.CASE_INSENSITIVE);
         Matcher match = regex.matcher(version);
 
@@ -31,10 +34,10 @@ public final class VersionParserImpl implements VersionParser
         final int listSize = results.size();
 
         if (listSize > 4)
-            throw new ParseException("Cannot parse more than 4 integers to determine a version.", 0);
+            throw new ParseException(String.format("Cannot parse more than 4 integers to determine a version: %s.", version), 0);
 
         if (listSize < 1)
-            throw new ParseException("Cannot parse less than 1 integer to determine a version.", 0);
+            throw new ParseException(String.format("Cannot parse less than 1 integer to determine a version: %s.", version), 0);
 
         int major = Integer.valueOf(results.get(0));
         int minor = listSize > 1 ? Integer.valueOf(results.get(1)) : 0;

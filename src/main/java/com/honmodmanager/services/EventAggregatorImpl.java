@@ -53,6 +53,15 @@ public final class EventAggregatorImpl implements EventAggregator
     }
 
     @Override
+    public <TSubscriber> void unsubscribe(TSubscriber subscriber)
+    {
+        if (!this.subscribers.remove(subscriber))
+        {
+            throw new IllegalStateException("Subscriber not found!");
+        }
+    }
+
+    @Override
     public <TEvent, TSubscriber extends EventAggregatorHandler<TEvent>> void Subscribe(TSubscriber subscriber)
     {
         if (!this.subscribers.any(x -> x.getValue().equals(subscriber)))

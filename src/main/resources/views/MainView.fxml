@@ -45,7 +45,7 @@
          <children>
             <Button mnemonicParsing="false" onAction="#handleApplyAction" text="Apply" />
             <Button mnemonicParsing="false" onAction="#handleApplyAndRunAction" text="Apply &amp; Run HON" />
-            <Button mnemonicParsing="false" onAction="#handleUpdateAllAction" text="Update All" />
+            <Button fx:id="updateAllButton" mnemonicParsing="false" onAction="#handleUpdateAllAction" text="Update All" />
             <Button mnemonicParsing="false" onAction="#handleOpenModsFolderAction" text="Open Mods folder" />
          </children>
          <opaqueInsets>

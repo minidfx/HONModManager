@@ -34,4 +34,20 @@ public interface Version
      * @return
      */
     int getBuild();
+
+    /**
+     * Determines whether the version passed in greater than the version.
+     *
+     * @param version
+     * @return
+     */
+    boolean greaterThan(Version version);
+
+    /**
+     * Determines whether the version passed in lower than the version.
+     *
+     * @param version
+     * @return
+     */
+    boolean lowerThan(Version version);
 }

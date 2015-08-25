@@ -63,4 +63,8 @@ public interface FXmlController extends Initializable
     }
 
     FXMLLoader getFXMLoader();
+
+    void release();
+
+    boolean isReleased();
 }

@@ -1,6 +1,7 @@
 package com.honmodmanager.services.contracts;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -11,7 +12,7 @@ import java.nio.file.Path;
  */
 public interface PlatformInteraction
 {
-    void openLink(URL address) throws IOException, URISyntaxException;
+    void openLink(URI address) throws IOException;
 
     void openFolder(Path path) throws IOException;
 }
