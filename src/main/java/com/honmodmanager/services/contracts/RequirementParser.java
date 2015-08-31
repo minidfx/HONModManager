@@ -7,7 +7,7 @@ import java.text.ParseException;
  *
  * @author Burgy Benjamin
  */
-public interface RequierementParser
+public interface RequirementParser
 {
     Requierement parse(String versions) throws ParseException;
 }

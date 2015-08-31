@@ -6,6 +6,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Date;
 import javafx.scene.image.Image;
+import javafx.util.Pair;
 
 /**
  *
@@ -195,4 +196,12 @@ public interface Mod
     void addApplyBefore(String modId, Version version);
 
     void enabled(boolean value);
+
+    void addCopyElement(CopyFileElement value);
+
+    List<CopyFileElement> getCopyElements();
+
+    void addEditElement(EditFileElement value);
+
+    List<EditFileElement> getEditElements();
 }

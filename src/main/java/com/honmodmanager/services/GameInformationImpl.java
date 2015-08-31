@@ -1,5 +1,6 @@
 package com.honmodmanager.services;
 
+import com.honmodmanager.models.VersionImpl;
 import com.honmodmanager.models.contracts.Version;
 import com.honmodmanager.services.contracts.OperatingSystemInformation;
 import com.honmodmanager.services.contracts.GameInformation;
@@ -320,5 +321,11 @@ public final class GameInformationImpl implements GameInformation
     public Path getModsFolder()
     {
         return Paths.get(this.getPreferencesFolderPath().toString(), "mods");
+    }
+
+    @Override
+    public Version getModMangerVersion()
+    {
+        return new VersionImpl(1, 3, 6, 0);
     }
 }

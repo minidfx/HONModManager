@@ -7,10 +7,8 @@ import com.honmodmanager.services.contracts.ModDownloader;
 import com.honmodmanager.services.contracts.ModUpdater;
 import com.honmodmanager.services.contracts.VersionParser;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.SocketException;
 import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import rx.Observable;
-import rx.Subscriber;
 
 /**
  * Implementation for updating mods of Heroes of Newerth.

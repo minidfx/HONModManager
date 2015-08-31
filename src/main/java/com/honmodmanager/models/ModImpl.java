@@ -2,6 +2,8 @@ package com.honmodmanager.models;
 
 import com.github.jlinqer.collections.Dictionary;
 import com.github.jlinqer.collections.List;
+import com.honmodmanager.models.contracts.CopyFileElement;
+import com.honmodmanager.models.contracts.EditFileElement;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.models.contracts.Requierement;
 import com.honmodmanager.models.contracts.Version;
@@ -31,6 +33,8 @@ public final class ModImpl implements Mod
     private Requierement gameVersion;
     private String modId;
     private Path filePath;
+    private List<CopyFileElement> copyElements;
+    private List<EditFileElement> editElements;
 
     public ModImpl(String name, Version version, boolean isEnabled)
     {
@@ -246,5 +250,29 @@ public final class ModImpl implements Mod
     public void setFilePath(Path value)
     {
         this.filePath = value;
+    }
+
+    @Override
+    public void addCopyElement(CopyFileElement value)
+    {
+        this.copyElements.add(value);
+    }
+
+    @Override
+    public List<CopyFileElement> getCopyElements()
+    {
+        return this.copyElements;
+    }
+
+    @Override
+    public void addEditElement(EditFileElement value)
+    {
+        this.editElements.add(value);
+    }
+
+    @Override
+    public List<EditFileElement> getEditElements()
+    {
+        return this.editElements;
     }
 }

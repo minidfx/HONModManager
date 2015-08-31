@@ -37,6 +37,13 @@ public interface GameInformation
     Observable<Version> getVersion();
 
     /**
+     * Returns the version of the official manager.
+     *
+     * @return
+     */
+    Version getModMangerVersion();
+
+    /**
      * Returns the version of the original resource.
      *
      * @return

@@ -4,14 +4,17 @@ import com.honmodmanager.exceptions.MalformedModException;
 import com.github.jlinqer.collections.List;
 import com.honmodmanager.exceptions.MalformedZipCommentsException;
 import com.honmodmanager.exceptions.ModsFolderNotFoundException;
+import com.honmodmanager.models.CopyFileElementImpl;
+import com.honmodmanager.models.EditFileElementImpl;
 import com.honmodmanager.models.ModImpl;
+import com.honmodmanager.models.contracts.EditOperation;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.models.contracts.Requierement;
 import com.honmodmanager.models.contracts.Version;
 import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.ModIdBuilder;
 import com.honmodmanager.services.contracts.ModReader;
-import com.honmodmanager.services.contracts.RequierementParser;
+import com.honmodmanager.services.contracts.RequirementParser;
 import com.honmodmanager.services.contracts.VersionParser;
 import com.joestelmach.natty.Parser;
 import java.io.File;
@@ -40,6 +43,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import rx.Observable;
@@ -56,13 +60,13 @@ public final class ModReaderImpl implements ModReader
     private final GameInformation gameInformation;
     private final VersionParser versionParser;
     private final Parser dateParser;
-    private final RequierementParser requierementParser;
+    private final RequirementParser requierementParser;
     private final ModIdBuilder modIdBuilder;
 
     @Autowired
     public ModReaderImpl(GameInformation gameInformation,
                          VersionParser versionParser,
-                         RequierementParser requierementParser,
+                         RequirementParser requierementParser,
                          ModIdBuilder modIdBuilder)
     {
         this.gameInformation = gameInformation;
@@ -334,6 +338,38 @@ public final class ModReaderImpl implements ModReader
             Version applyAfterVersion = this.versionParser.parse(element.getAttribute("version"));
 
             mod.addApplyAfter(applyAfterModId, applyAfterVersion);
+        }
+
+        NodeList copyFiles = xml.getElementsByTagName("copyfile");
+        for (int m = 0; m < copyFiles.getLength(); m++)
+        {
+            Element element = (Element) copyFiles.item(m);
+            String path = element.getAttribute("name");
+            String condition = element.getAttribute("condition");
+            boolean overwrite = Boolean.valueOf(element.getAttribute("overwrite"));
+
+            mod.addCopyElement(new CopyFileElementImpl(path, overwrite, condition));
+        }
+
+        NodeList editFiles = xml.getElementsByTagName("editfile");
+        for (int m = 0; m < editFiles.getLength(); m++)
+        {
+            Element element = (Element) editFiles.item(m);
+            String path = element.getAttribute("name");
+            String condition = element.getAttribute("condition");
+
+            Element firstElement = (Element) element.getFirstChild();
+            EditOperation editOperation = EditOperation.valueOf(firstElement.getNodeName());
+
+            List<Node> operands = new List<>();
+
+            for (int n = 1; n < element.getChildNodes().getLength(); n++)
+            {
+                Node node = element.getChildNodes().item(n);
+                operands.add(node);
+            }
+
+            mod.addEditElement(new EditFileElementImpl(path, editOperation, operands, condition));
         }
 
         return mod;

@@ -3,7 +3,7 @@ package com.honmodmanager.services;
 import com.honmodmanager.models.RequierementImpl;
 import com.honmodmanager.models.contracts.Requierement;
 import com.honmodmanager.models.contracts.Version;
-import com.honmodmanager.services.contracts.RequierementParser;
+import com.honmodmanager.services.contracts.RequirementParser;
 import com.honmodmanager.services.contracts.VersionParser;
 import java.text.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Scope("singleton")
-public final class RequierementParserImpl implements RequierementParser
+public final class RequirementParserImpl implements RequirementParser
 {
     private final VersionParser versionParser;
 
     @Autowired
-    public RequierementParserImpl(VersionParser versionParser)
+    public RequirementParserImpl(VersionParser versionParser)
     {
         this.versionParser = versionParser;
     }
