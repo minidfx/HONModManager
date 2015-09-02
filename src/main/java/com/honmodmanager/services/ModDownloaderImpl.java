@@ -90,6 +90,5 @@ public final class ModDownloaderImpl implements ModDownloader
                 httpConnection.disconnect();
             }
         }
-
     }
 }

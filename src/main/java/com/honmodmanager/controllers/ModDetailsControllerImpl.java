@@ -5,6 +5,7 @@ import com.honmodmanager.events.ModUpdatedEvent;
 import com.honmodmanager.events.UpdateRowDisplayAction;
 import com.honmodmanager.exceptions.ModActivationException;
 import com.honmodmanager.models.contracts.Mod;
+import com.honmodmanager.services.contracts.ConnectionTester;
 import com.honmodmanager.services.contracts.EventAggregator;
 import com.honmodmanager.services.contracts.EventAggregatorHandler;
 import com.honmodmanager.services.contracts.ModEnabler;
@@ -24,6 +25,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
+import rx.Subscription;
 import rx.schedulers.Schedulers;
 
 /**
@@ -35,11 +37,14 @@ import rx.schedulers.Schedulers;
 public final class ModDetailsControllerImpl extends FXmlControllerBase implements ModDetailsController,
                                                                                   EventAggregatorHandler<ModUpdatedEvent>
 {
+    private static final Logger LOG = Logger.getLogger(ModDetailsControllerImpl.class.getName());
     private final Mod model;
     private final PlatformInteraction platformInteraction;
     private final EventAggregator eventAggregator;
-    private static final Logger LOG = Logger.getLogger(ModDetailsControllerImpl.class.getName());
     private final ModUpdater modUpdater;
+    private final ModEnabler modEnabler;
+    private Subscription internetConnectionObservable;
+    private final ConnectionTester connectionTester;
 
     @FXML
     private Label title;
@@ -70,19 +75,20 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
 
     @FXML
     private Button updateButton;
-    private final ModEnabler modEnabler;
 
     public ModDetailsControllerImpl(Mod model,
                                     PlatformInteraction platformInteraction,
                                     EventAggregator eventAggregator,
                                     ModUpdater modUpdater,
-                                    ModEnabler modEnabler)
+                                    ModEnabler modEnabler,
+                                    ConnectionTester connectionTester)
     {
         this.model = model;
         this.platformInteraction = platformInteraction;
         this.eventAggregator = eventAggregator;
         this.modUpdater = modUpdater;
         this.modEnabler = modEnabler;
+        this.connectionTester = connectionTester;
     }
 
     @Override
@@ -96,6 +102,7 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
         this.updateURL.setText(this.model.getVersionAddress().toString());
         this.enabled.setSelected(this.model.isEnabled());
         this.errorMessage.setVisible(false);
+        this.updateButton.setDisable(true);
 
         Date modDate = this.model.getDate();
 
@@ -105,6 +112,17 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
             this.date.setText("");
 
         this.eventAggregator.Subscribe(this);
+        this.internetConnectionObservable = this.connectionTester
+                .TestUrl(this.model.getVersionAddress())
+                .subscribeOn(Schedulers.io())
+                .subscribe(b ->
+                        {
+                            this.executeOnUIThread(() ->
+                                    {
+                                        LOG.info(String.format("Update URL status: %b", b));
+                                        this.updateButton.setDisable(!b);
+                            });
+                });
     }
 
     @Override
@@ -113,6 +131,9 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
         super.release();
 
         this.eventAggregator.unsubscribe(this);
+        this.internetConnectionObservable.unsubscribe();
+
+        LOG.info("Controller released");
     }
 
     @FXML

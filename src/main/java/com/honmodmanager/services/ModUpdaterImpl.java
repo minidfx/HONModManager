@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import rx.Observable;
+import rx.Subscriber;
 
 /**
  * Implementation for updating mods of Heroes of Newerth.

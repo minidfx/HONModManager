@@ -13,6 +13,7 @@ import com.honmodmanager.services.contracts.ZipCommentsBuilder;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
@@ -20,8 +21,16 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 import javafx.util.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+import rx.Observable;
+import rx.Subscriber;
 
+@Service
+@Scope("singleton")
 public final class ModWriterImpl implements ModWriter
 {
     private static final Logger LOG = Logger.getLogger(ModWriterImpl.class.getName());
@@ -31,6 +40,7 @@ public final class ModWriterImpl implements ModWriter
     private final ZipCommentsBuilder zipCommentsBuilder;
     private final ConditionEvaluator conditionEvaluator;
 
+    @Autowired
     public ModWriterImpl(GameInformation gameInformation,
                          ModReader modReader,
                          ZipCommentsBuilder zipCommentsBuilder,
@@ -64,46 +74,89 @@ public final class ModWriterImpl implements ModWriter
     }
 
     @Override
-    public void Write()
+    public Observable<Boolean> Write()
     {
-        this.backupResources();
+        return Observable.create((Subscriber<? super Boolean> subscriber) ->
+        {
+            this.backupResources();
+
+            try
+            {
+                List<Mod> mods = new List(this.modReader.getMods()
+                        .toBlockingObservable()
+                        .toIterable());
+
+                IEnumerable<Mod> enabledMods = mods.where(x -> x.isEnabled());
+
+                if (!enabledMods.any())
+                    throw new ApplyModException("No mod enabled found to be applied.");
+
+                IEnumerable<Mod> sortedMods = enabledMods.orderBy(x ->
+                {
+                    return x.getApplyAfter()
+                            .equals(x.getId());
+                });
+
+                List<Pair<String, byte[]>> filesBytes = new List<>();
+
+                try
+                {
+                    this.zipCommentsBuilder.init();
+
+                    this.AddReminder();
+
+                    for (Mod mod : sortedMods)
+                    {
+                        this.zipCommentsBuilder.addMod(mod);
+
+                        try (ZipFile zipMod = new ZipFile(mod.getFilePath().toFile()))
+                        {
+                            List<Pair<String, byte[]>> copyFilesBytes = this.copyFiles(mod, zipMod);
+                            filesBytes.addAll(copyFilesBytes);
+                        }
+                    }
+
+                    try (ZipOutputStream additionalResource = new ZipOutputStream(new FileOutputStream(this.gameInformation.getAdditonalResourcePath().toFile())))
+                    {
+                        for (Pair<String, byte[]> fileBytes : filesBytes)
+                        {
+                            this.AddZipEntry(additionalResource, fileBytes.getKey(), fileBytes.getValue());
+                        }
+
+                        additionalResource.setComment(this.zipCommentsBuilder.build());
+                    }
+
+                    subscriber.onCompleted();
+                }
+                finally
+                {
+                    filesBytes.clear();
+                    filesBytes = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                LOG.log(Level.SEVERE, ex.getMessage(), ex);
+
+                this.restoreBackup();
+                subscriber.onError(ex);
+            }
+        });
+    }
+
+    private void AddZipEntry(ZipOutputStream zipInputStream, String path, byte[] bytes) throws IOException
+    {
+        ZipEntry newZipEntry = new ZipEntry(path);
+        newZipEntry.setCompressedSize(9);
 
         try
         {
-            List<Mod> mods = new List(this.modReader.getMods()
-                    .toBlockingObservable()
-                    .toIterable());
-
-            IEnumerable<Mod> enabledMods = mods.where(x -> x.isEnabled());
-
-            if (!enabledMods.any())
-                throw new ApplyModException("No mod enabled found to be applied.");
-
-            IEnumerable<Mod> sortedMods = enabledMods.orderBy(x ->
-                    x.getApplyAfter()
-                    .equals(x.getId()));
-
-            List<Pair<String, byte[]>> filesBytes = new List<>();
-            this.zipCommentsBuilder.init();
-
-            this.AddReminder();
-
-            for (Mod mod : sortedMods)
-            {
-                this.zipCommentsBuilder.addMod(mod);
-
-                try (ZipFile zipMod = new ZipFile(mod.getFilePath().toFile()))
-                {
-                    List<Pair<String, byte[]>> copyFilesBytes = this.copyFiles(mod, zipMod);
-                    filesBytes.addAll(copyFilesBytes);
-
-                }
-            }
+            zipInputStream.putNextEntry(newZipEntry);
+            zipInputStream.write(bytes);
         }
-        catch (Exception ex)
+        finally
         {
-            LOG.log(Level.SEVERE, ex.getMessage(), ex);
-            this.restoreBackup();
+            zipInputStream.closeEntry();
         }
     }
 

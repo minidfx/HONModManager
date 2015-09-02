@@ -1,5 +1,7 @@
 package com.honmodmanager.services.contracts;
 
+import rx.Observable;
+
 /**
  * Enables the class to write mods installed on Heroes of Newerth.
  *
@@ -7,5 +9,5 @@ package com.honmodmanager.services.contracts;
  */
 public interface ModWriter
 {
-    void Write();
+    Observable<Boolean> Write();
 }

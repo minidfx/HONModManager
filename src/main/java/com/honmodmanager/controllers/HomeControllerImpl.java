@@ -8,13 +8,13 @@ import com.honmodmanager.controllers.contracts.ModDetailsControllerFactory;
 import com.honmodmanager.events.ModSelectedEvent;
 import com.honmodmanager.events.ModUpdatedEvent;
 import com.honmodmanager.events.UpdateRowDisplayAction;
-import com.honmodmanager.exceptions.ModUpdateException;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.models.contracts.Version;
 import com.honmodmanager.services.contracts.EventAggregator;
 import com.honmodmanager.services.contracts.EventAggregatorHandler;
 import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.ModUpdater;
+import com.honmodmanager.services.contracts.ModWriter;
 import com.honmodmanager.services.contracts.PlatformInteraction;
 import com.honmodmanager.storage.contracts.Storage;
 import java.io.File;
@@ -31,13 +31,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import rx.Observable;
+import rx.Subscription;
 import rx.schedulers.Schedulers;
 
 /**
@@ -57,10 +57,14 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private final EventAggregator eventAggregator;
     private final PlatformInteraction platformInteraction;
     private final ModUpdater modUpdater;
+    private final ModWriter modWriter;
     private final Storage storage;
+    private Subscription writerSubscription;
+    private Subscription gameVersionSubscription;
+    private Subscription updateSubscription;
 
     @FXML
-    private SplitPane mainSplitPane;
+    private Button applyButton;
 
     @FXML
     private BorderPane leftPane;
@@ -73,6 +77,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
 
     @FXML
     private Button updateAllButton;
+    private ModDetailsController selectedModDetailsController;
 
     @Autowired
     public HomeControllerImpl(LeftSideController leftSideController,
@@ -81,6 +86,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
                               EventAggregator eventAggregator,
                               PlatformInteraction platformInteraction,
                               ModUpdater modUpdater,
+                              ModWriter modWriter,
                               Storage storage)
     {
         this.leftSideController = leftSideController;
@@ -89,6 +95,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         this.eventAggregator = eventAggregator;
         this.platformInteraction = platformInteraction;
         this.modUpdater = modUpdater;
+        this.modWriter = modWriter;
         this.storage = storage;
     }
 
@@ -107,6 +114,9 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         super.release();
 
         this.eventAggregator.unsubscribe(this);
+        this.gameVersionSubscription.unsubscribe();
+        this.updateSubscription.unsubscribe();
+        this.writerSubscription.unsubscribe();
     }
 
     private void loadViews()
@@ -132,31 +142,36 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         });
 
         Observable<Version> gameVersionObservable = this.gameInformation.getVersion();
-        gameVersionObservable.subscribe(v ->
+        this.gameVersionSubscription = gameVersionObservable.subscribe(v ->
         {
             this.executeOnUIThread(() ->
             {
                 this.hONVersion.setText(v.toString());
             });
         },
-                                        e ->
-                                        {
-                                            LOG.log(Level.SEVERE, e.getMessage(), e);
-                                            this.executeOnUIThread(() ->
-                                                    {
-                                                        this.hONVersion.setText("Error!");
-                                            });
-                                        });
+                                                                       e ->
+                                                                       {
+                                                                           LOG.log(Level.SEVERE, e.getMessage(), e);
+                                                                           this.executeOnUIThread(() ->
+                                                                                   {
+                                                                                       this.hONVersion.setText("Error!");
+                                                                           });
+                                                                       });
     }
 
     @Override
     public void handleEvent(ModSelectedEvent event)
     {
-        ModDetailsController controller = this.modDetailsControllerFactory.Create(event.getModel());
+        if (this.selectedModDetailsController != null)
+        {
+            this.selectedModDetailsController.release();
+        }
+
+        this.selectedModDetailsController = this.modDetailsControllerFactory.Create(event.getModel());
 
         try
         {
-            FXMLLoader modDetailsControllerFxmlLoader = controller.loadView("/views/ModDetailsView.fxml");
+            FXMLLoader modDetailsControllerFxmlLoader = selectedModDetailsController.loadView("/views/ModDetailsView.fxml");
             this.executeOnUIThread(() ->
             {
                 this.centerPane.setCenter(modDetailsControllerFxmlLoader.getRoot());
@@ -203,7 +218,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
 
         Observable<Pair<Mod, File>> mergedObservable = Observable.merge(observables, Schedulers.io());
 
-        mergedObservable.subscribeOn(Schedulers.io())
+        this.updateSubscription = mergedObservable.subscribeOn(Schedulers.io())
                 .subscribe(r ->
                         {
                             this.eventAggregator.Publish(new ModUpdatedEvent(r.getKey(), UpdateRowDisplayAction.Updated));
@@ -234,7 +249,30 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     @FXML
     private void handleApplyAction(ActionEvent event)
     {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        this.applyButton.setDisable(true);
+
+        this.writerSubscription = this.modWriter
+                .Write()
+                .subscribeOn(Schedulers.io())
+                .subscribe(x ->
+                        {
+                            if (x)
+                            {
+
+                            }
+                            else
+                            {
+
+                            }
+                }, e ->
+                           {
+                               LOG.log(Level.SEVERE, e.getMessage(), e);
+                },
+                           () ->
+                           {
+                               this.executeOnUIThread(() ->
+                                       this.applyButton.setDisable(false));
+                           });
     }
 
     @FXML

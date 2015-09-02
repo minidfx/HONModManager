@@ -3,7 +3,12 @@ package com.honmodmanager.services;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.ZipCommentsBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
+@Service
+@Scope("singleton")
 public final class ZipCommentsBuilderImpl implements ZipCommentsBuilder
 {
     private final GameInformation gameInformation;
@@ -13,6 +18,7 @@ public final class ZipCommentsBuilderImpl implements ZipCommentsBuilder
      *
      * @param gameInformation
      */
+    @Autowired
     public ZipCommentsBuilderImpl(GameInformation gameInformation)
     {
         this.gameInformation = gameInformation;

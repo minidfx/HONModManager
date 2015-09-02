@@ -46,6 +46,8 @@ public final class ModImpl implements Mod
         this.requiredMods = new List<>();
         this.applyAfter = new Dictionary<>();
         this.applyBefore = new Dictionary<>();
+        this.copyElements = new List<>();
+        this.editElements = new List<>();
     }
 
     @Override

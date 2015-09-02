@@ -17,9 +17,11 @@ import com.honmodmanager.services.contracts.ModReader;
 import com.honmodmanager.services.contracts.RequirementParser;
 import com.honmodmanager.services.contracts.VersionParser;
 import com.joestelmach.natty.Parser;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.util.NodeType;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidClassException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -301,56 +303,38 @@ public final class ModReaderImpl implements ModReader
         mod.setModManagerVersion(mmVersion);
         mod.setGameVersion(appVersion);
 
-        NodeList incompatibilities = modificationElement.getElementsByTagName("incompatibility");
-        for (int i = 0; i < incompatibilities.getLength(); i++)
-        {
-            Element element = (Element) incompatibilities.item(i);
-            String incompatibleModId = element.getAttribute("name");
+        readIncompatibillitiesElements(xml, mod);
+        readRequierementElements(xml, mod);
+        readApplyBeforeElements(xml, mod);
+        readApplyAfterElements(xml, mod);
+        readCopyFileElements(xml, mod);
+        readEditFileElements(xml, mod);
 
-            mod.addIncompatibillity(incompatibleModId);
+        return mod;
+    }
+
+    private Element getFirstChildElement(Element element)
+    {
+        NodeList nodes = element.getChildNodes();
+
+        for (int i = 0; i < nodes.getLength(); i++)
+        {
+            try
+            {
+                Element firstElement = (Element) nodes.item(i);
+                return firstElement;
+            }
+            catch (ClassCastException e)
+            {
+                // HACK: Didn't find another solution to find the first element.
+            }
         }
 
-        NodeList requirements = modificationElement.getElementsByTagName("requierement");
+        throw new UnsupportedOperationException("Cannot found the first element of an EditFileElement.");
+    }
 
-        for (int j = 0; j < requirements.getLength(); j++)
-        {
-            Element element = (Element) requirements.item(j);
-            String requiredModId = element.getAttribute("name");
-
-            mod.addRequirement(requiredModId);
-        }
-
-        NodeList applyBefore = modificationElement.getElementsByTagName("applybefore");
-        for (int k = 0; k < applyBefore.getLength(); k++)
-        {
-            Element element = (Element) applyBefore.item(k);
-            String applyBeforeModId = element.getAttribute("name");
-            Version applyBeforeVersion = this.versionParser.parse(element.getAttribute("version"));
-
-            mod.addApplyBefore(applyBeforeModId, applyBeforeVersion);
-        }
-
-        NodeList applyAfter = xml.getElementsByTagName("applyafter");
-        for (int l = 0; l < applyAfter.getLength(); l++)
-        {
-            Element element = (Element) applyAfter.item(l);
-            String applyAfterModId = element.getAttribute("name");
-            Version applyAfterVersion = this.versionParser.parse(element.getAttribute("version"));
-
-            mod.addApplyAfter(applyAfterModId, applyAfterVersion);
-        }
-
-        NodeList copyFiles = xml.getElementsByTagName("copyfile");
-        for (int m = 0; m < copyFiles.getLength(); m++)
-        {
-            Element element = (Element) copyFiles.item(m);
-            String path = element.getAttribute("name");
-            String condition = element.getAttribute("condition");
-            boolean overwrite = Boolean.valueOf(element.getAttribute("overwrite"));
-
-            mod.addCopyElement(new CopyFileElementImpl(path, overwrite, condition));
-        }
-
+    private void readEditFileElements(Document xml, Mod mod)
+    {
         NodeList editFiles = xml.getElementsByTagName("editfile");
         for (int m = 0; m < editFiles.getLength(); m++)
         {
@@ -358,7 +342,7 @@ public final class ModReaderImpl implements ModReader
             String path = element.getAttribute("name");
             String condition = element.getAttribute("condition");
 
-            Element firstElement = (Element) element.getFirstChild();
+            Element firstElement = this.getFirstChildElement(element);
             EditOperation editOperation = EditOperation.valueOf(firstElement.getNodeName());
 
             List<Node> operands = new List<>();
@@ -371,7 +355,69 @@ public final class ModReaderImpl implements ModReader
 
             mod.addEditElement(new EditFileElementImpl(path, editOperation, operands, condition));
         }
+    }
 
-        return mod;
+    private void readCopyFileElements(Document xml, Mod mod)
+    {
+        NodeList copyFiles = xml.getElementsByTagName("copyfile");
+        for (int m = 0; m < copyFiles.getLength(); m++)
+        {
+            Element element = (Element) copyFiles.item(m);
+            String path = element.getAttribute("name");
+            String condition = element.getAttribute("condition");
+            boolean overwrite = Boolean.valueOf(element.getAttribute("overwrite"));
+
+            mod.addCopyElement(new CopyFileElementImpl(path, overwrite, condition));
+        }
+    }
+
+    private void readApplyAfterElements(Document xml, Mod mod) throws ParseException
+    {
+        NodeList applyAfter = xml.getElementsByTagName("applyafter");
+        for (int l = 0; l < applyAfter.getLength(); l++)
+        {
+            Element element = (Element) applyAfter.item(l);
+            String applyAfterModId = element.getAttribute("name");
+            Version applyAfterVersion = this.versionParser.parse(element.getAttribute("version"));
+
+            mod.addApplyAfter(applyAfterModId, applyAfterVersion);
+        }
+    }
+
+    private void readApplyBeforeElements(Document xml, Mod mod) throws ParseException
+    {
+        NodeList applyBefore = xml.getElementsByTagName("applybefore");
+        for (int k = 0; k < applyBefore.getLength(); k++)
+        {
+            Element element = (Element) applyBefore.item(k);
+            String applyBeforeModId = element.getAttribute("name");
+            Version applyBeforeVersion = this.versionParser.parse(element.getAttribute("version"));
+
+            mod.addApplyBefore(applyBeforeModId, applyBeforeVersion);
+        }
+    }
+
+    private void readRequierementElements(Document xml, Mod mod)
+    {
+        NodeList requirements = xml.getElementsByTagName("requierement");
+        for (int j = 0; j < requirements.getLength(); j++)
+        {
+            Element element = (Element) requirements.item(j);
+            String requiredModId = element.getAttribute("name");
+
+            mod.addRequirement(requiredModId);
+        }
+    }
+
+    private void readIncompatibillitiesElements(Document xml, Mod mod)
+    {
+        NodeList incompatibilities = xml.getElementsByTagName("incompatibility");
+        for (int i = 0; i < incompatibilities.getLength(); i++)
+        {
+            Element element = (Element) incompatibilities.item(i);
+            String incompatibleModId = element.getAttribute("name");
+
+            mod.addIncompatibillity(incompatibleModId);
+        }
     }
 }

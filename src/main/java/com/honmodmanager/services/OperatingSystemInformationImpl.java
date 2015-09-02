@@ -2,13 +2,19 @@ package com.honmodmanager.services;
 
 import com.honmodmanager.services.contracts.OperatingSystemInformation;
 import com.honmodmanager.services.contracts.OperatingSystem;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 @Service
 @Scope("singleton")
-public class OperatingSystemInformationImpl implements OperatingSystemInformation
+public final class OperatingSystemInformationImpl implements OperatingSystemInformation
 {
+    private static final Logger LOG = Logger.getLogger(OperatingSystemInformationImpl.class.getName());
+
     private OperatingSystem operatingSystem;
 
     @Override

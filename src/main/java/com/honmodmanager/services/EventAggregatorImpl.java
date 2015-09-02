@@ -55,10 +55,10 @@ public final class EventAggregatorImpl implements EventAggregator
     @Override
     public <TSubscriber> void unsubscribe(TSubscriber subscriber)
     {
-        if (!this.subscribers.remove(subscriber))
-        {
-            throw new IllegalStateException("Subscriber not found!");
-        }
+        Pair<Type, EventAggregatorHandler> subscriberFound = this.subscribers.single(x ->
+                x.getValue().equals(subscriber));
+
+        this.subscribers.remove(subscriberFound);
     }
 
     @Override
