@@ -7,7 +7,7 @@ import com.honmodmanager.controllers.contracts.LeftModRowControllerFactory;
 import com.honmodmanager.controllers.contracts.LeftSideController;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.EventAggregator;
-import com.honmodmanager.services.contracts.ModReader;
+import com.honmodmanager.services.contracts.ModManager;
 import com.honmodmanager.storage.contracts.Storage;
 import java.io.IOException;
 import java.net.URL;
@@ -36,27 +36,28 @@ import rx.Observable;
 public final class LeftSideControllerImpl extends FXmlControllerBase implements LeftSideController
 {
     private static final Logger LOG = Logger.getLogger(LeftSideControllerImpl.class.getName());
-    private final ModReader modReader;
-    List<LeftModRowController> controllers;
+
+    private final List<LeftModRowController> controllers;
+    private final ModManager modManager;
     private final LeftModRowControllerFactory leftModRowControllerFactory;
     private final EventAggregator eventAggregator;
+    private final Storage storage;
 
     @FXML
     public BorderPane progressIndicator;
 
     @FXML
     public ListView<Parent> listMod;
-    private final Storage storage;
 
     @Autowired
-    public LeftSideControllerImpl(ModReader modReader,
+    public LeftSideControllerImpl(ModManager modManager,
                                   LeftModRowControllerFactory leftModRowControllerFactory,
                                   EventAggregator eventAggregator,
                                   Storage storage)
     {
         this.controllers = new List<>();
 
-        this.modReader = modReader;
+        this.modManager = modManager;
         this.leftModRowControllerFactory = leftModRowControllerFactory;
         this.eventAggregator = eventAggregator;
         this.storage = storage;
@@ -99,7 +100,7 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
 
     private void fillMods()
     {
-        Observable<Mod> observableMods = this.modReader.getMods();
+        Observable<Mod> observableMods = this.modManager.getAll();
 
         // Subscribe to the observable for updating the list
         observableMods.subscribe((Mod m) ->

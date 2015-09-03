@@ -1,5 +1,6 @@
 package com.honmodmanager.services.contracts;
 
+import com.github.jlinqer.collections.List;
 import com.honmodmanager.models.contracts.Mod;
 import rx.Observable;
 
@@ -16,4 +17,11 @@ public interface ModReader
      * @return Returns mods that need an update.
      */
     Observable<Mod> getMods();
+
+    /**
+     * Returns the last result of the observable getMods.
+     *
+     * @return
+     */
+    List<Mod> getCachedMods();
 }

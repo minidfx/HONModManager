@@ -1,5 +1,9 @@
 package com.honmodmanager.services.contracts;
 
+import com.honmodmanager.models.contracts.Mod;
+import java.nio.file.Path;
+import rx.Observable;
+
 /**
  * Enables the class to manage mods installed on Heroes of Newerth.
  *
@@ -7,5 +11,11 @@ package com.honmodmanager.services.contracts;
  */
 public interface ModManager
 {
-    void Apply();
+    Observable<Boolean> apply();
+
+    void add(Path path);
+
+    Observable<Mod> getAll();
+
+    void remove(Mod mod);
 }

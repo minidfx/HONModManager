@@ -17,11 +17,9 @@ import com.honmodmanager.services.contracts.ModReader;
 import com.honmodmanager.services.contracts.RequirementParser;
 import com.honmodmanager.services.contracts.VersionParser;
 import com.joestelmach.natty.Parser;
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.NodeType;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InvalidClassException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -64,6 +62,7 @@ public final class ModReaderImpl implements ModReader
     private final Parser dateParser;
     private final RequirementParser requierementParser;
     private final ModIdBuilder modIdBuilder;
+    private List<Mod> cachedMods;
 
     @Autowired
     public ModReaderImpl(GameInformation gameInformation,
@@ -77,17 +76,22 @@ public final class ModReaderImpl implements ModReader
         this.dateParser = new Parser();
         this.requierementParser = requierementParser;
         this.modIdBuilder = modIdBuilder;
+
+        this.cachedMods = new List<>();
     }
 
     @Override
     @SuppressWarnings("UseSpecificCatch")
     public Observable<Mod> getMods()
     {
+        this.cachedMods = new List<>();
+
         return Observable.create((Subscriber<? super Mod> subscriber) ->
         {
             try
             {
-                this.readZip(subscriber);
+                List<Mod> modsApplied = this.readAdditionalResources(subscriber);
+                this.readModFolder(modsApplied, subscriber);
 
                 subscriber.onCompleted();
             }
@@ -96,27 +100,28 @@ public final class ModReaderImpl implements ModReader
                 subscriber.onError(e);
             }
         })
-                .subscribeOn(Schedulers.io());
+                .subscribeOn(Schedulers.io())
+                .doOnNext(x -> this.cachedMods.add(x));
     }
 
-    private void readZip(Subscriber<? super Mod> subscriber) throws ZipException,
-                                                                    MalformedZipCommentsException,
-                                                                    IOException,
-                                                                    ParseException,
-                                                                    ModsFolderNotFoundException,
-                                                                    MalformedModException,
-                                                                    ParserConfigurationException,
-                                                                    SAXException
+    private List<Mod> readAdditionalResources(Subscriber<? super Mod> subscriber) throws ZipException,
+                                                                                         MalformedZipCommentsException,
+                                                                                         IOException,
+                                                                                         ParseException,
+                                                                                         ModsFolderNotFoundException,
+                                                                                         MalformedModException,
+                                                                                         ParserConfigurationException,
+                                                                                         SAXException
     {
         File additionalResourceFile = this.gameInformation.getAdditonalResourcePath().toFile();
         List<Mod> modsApplied = new List<>();
 
         if (additionalResourceFile.exists())
         {
-            modsApplied.addAll(this.determinesModsApplied(additionalResourceFile));
+            modsApplied.addAll(this.determinesModsApplied(additionalResourceFile, subscriber));
         }
 
-        this.readModFolder(modsApplied, subscriber);
+        return modsApplied;
     }
 
     private void readModFolder(List<Mod> modsApplied, Subscriber<? super Mod> subscriber) throws ModsFolderNotFoundException,
@@ -201,10 +206,10 @@ public final class ModReaderImpl implements ModReader
         }
     }
 
-    private List<Mod> determinesModsApplied(File additionalResourceFile) throws MalformedZipCommentsException,
-                                                                                ZipException,
-                                                                                IOException,
-                                                                                ParseException
+    private List<Mod> determinesModsApplied(File additionalResourceFile, Subscriber<? super Mod> subscriber) throws MalformedZipCommentsException,
+                                                                                                                    ZipException,
+                                                                                                                    IOException,
+                                                                                                                    ParseException
     {
         String zipComments = this.gameInformation.getZipComments(additionalResourceFile);
 
@@ -227,6 +232,7 @@ public final class ModReaderImpl implements ModReader
             LOG.info(String.format("Mod installed: %s (%s)", newMod.getName(), newMod.getVersion()));
 
             modsApplied.add(newMod);
+            subscriber.onNext(newMod);
         }
 
         return modsApplied;
@@ -419,5 +425,11 @@ public final class ModReaderImpl implements ModReader
 
             mod.addIncompatibillity(incompatibleModId);
         }
+    }
+
+    @Override
+    public List<Mod> getCachedMods()
+    {
+        return this.cachedMods;
     }
 }

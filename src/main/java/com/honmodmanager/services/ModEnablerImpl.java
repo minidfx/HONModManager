@@ -31,7 +31,7 @@ public final class ModEnablerImpl implements ModEnabler
     {
         List<String> requierements = mod.getRequiredMods();
         List<String> incompatibillities = mod.getIncompatibillities();
-        List<Mod> mods = new List(modReader.getMods().toBlockingObservable().toIterable());
+        List<Mod> mods = modReader.getCachedMods();
         Version gameVersion = this.gameInformation.getVersion().toBlockingObservable().first();
         Requierement modGameVersion = mod.getGameVersion();
 

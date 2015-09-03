@@ -14,8 +14,8 @@ import com.honmodmanager.services.contracts.ConnectionTester;
 import com.honmodmanager.services.contracts.EventAggregator;
 import com.honmodmanager.services.contracts.EventAggregatorHandler;
 import com.honmodmanager.services.contracts.GameInformation;
+import com.honmodmanager.services.contracts.ModManager;
 import com.honmodmanager.services.contracts.ModUpdater;
-import com.honmodmanager.services.contracts.ModWriter;
 import com.honmodmanager.services.contracts.PlatformInteraction;
 import com.honmodmanager.storage.contracts.Storage;
 import java.io.File;
@@ -27,6 +27,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.event.ActionEvent;
@@ -34,8 +35,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Pair;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -61,7 +67,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private final EventAggregator eventAggregator;
     private final PlatformInteraction platformInteraction;
     private final ModUpdater modUpdater;
-    private final ModWriter modWriter;
+    private final ModManager modManager;
     private final Storage storage;
     private final ConnectionTester connectionTester;
 
@@ -69,6 +75,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private Subscription gameVersionSubscription;
     private Subscription updateSubscription;
     private ModDetailsController selectedModDetailsController;
+    private Subscription internetConnectionObservable;
 
     @FXML
     private Button applyButton;
@@ -80,11 +87,13 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private BorderPane centerPane;
 
     @FXML
+    private BorderPane dragAndDropOverlay;
+
+    @FXML
     private Label hONVersion;
 
     @FXML
     private Button updateAllButton;
-    private Subscription internetConnectionObservable;
 
     @Autowired
     public HomeControllerImpl(LeftSideController leftSideController,
@@ -93,9 +102,9 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
                               EventAggregator eventAggregator,
                               PlatformInteraction platformInteraction,
                               ModUpdater modUpdater,
-                              ModWriter modWriter,
                               Storage storage,
-                              ConnectionTester connectionTester)
+                              ConnectionTester connectionTester,
+                              ModManager modManager)
     {
         this.leftSideController = leftSideController;
         this.modDetailsControllerFactory = modDetailsControllerFactory;
@@ -103,14 +112,16 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         this.eventAggregator = eventAggregator;
         this.platformInteraction = platformInteraction;
         this.modUpdater = modUpdater;
-        this.modWriter = modWriter;
         this.storage = storage;
         this.connectionTester = connectionTester;
+        this.modManager = modManager;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        this.dragAndDropOverlay.setVisible(false);
+
         this.loadGameVersion();
         this.loadViews();
 
@@ -126,7 +137,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
                             {
                                 this.executeOnUIThread(() ->
                                         {
-                                            LOG.info(String.format("Googe host status: %b", b));
+                                            LOG.info(String.format("Google host status: %b", b));
                                             this.updateAllButton.setDisable(!b);
                                 });
                     });
@@ -280,34 +291,74 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private void handleApplyAction(ActionEvent event)
     {
         this.applyButton.setDisable(true);
-
-        this.writerSubscription = this.modWriter
-                .Write()
-                .subscribeOn(Schedulers.io())
-                .subscribe(x ->
-                        {
-                            if (x)
-                            {
-
-                            }
-                            else
-                            {
-
-                            }
-                }, e ->
-                           {
-                               LOG.log(Level.SEVERE, e.getMessage(), e);
-                },
-                           () ->
-                           {
-                               this.executeOnUIThread(() ->
-                                       this.applyButton.setDisable(false));
-                           });
     }
 
     @FXML
     private void handleApplyAndRunAction(ActionEvent event)
     {
         throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    @FXML
+    private void handleAddButton(ActionEvent event)
+    {
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    @FXML
+    private void handleDragOver(DragEvent event)
+    {
+        try
+        {
+            this.dragAndDropOverlay.setVisible(true);
+            Dragboard db = event.getDragboard();
+
+            if (db.hasFiles())
+            {
+                List<File> files = new List(db.getFiles());
+
+                if (files.all(x ->
+                        FilenameUtils.getExtension(x.getAbsolutePath()).equals("honmod")))
+                {
+                    event.acceptTransferModes(TransferMode.COPY);
+                }
+            }
+        }
+        finally
+        {
+            event.consume();
+        }
+    }
+
+    @FXML
+    private void handleDragExited(DragEvent event)
+    {
+        this.dragAndDropOverlay.setVisible(false);
+
+        event.consume();
+    }
+
+    @FXML
+    private void handleDragDropped(DragEvent event)
+    {
+        try
+        {
+            this.dragAndDropOverlay.setVisible(false);
+
+            Dragboard db = event.getDragboard();
+
+            if (db.hasFiles())
+            {
+                for (File file : db.getFiles())
+                {
+                    this.modManager.add(file.toPath());
+                }
+            }
+        }
+        finally
+        {
+            event.setDropCompleted(true);
+            event.consume();
+        }
     }
 }
