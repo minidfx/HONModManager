@@ -10,6 +10,7 @@ import com.honmodmanager.events.ModUpdatedEvent;
 import com.honmodmanager.events.UpdateRowDisplayAction;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.models.contracts.Version;
+import com.honmodmanager.services.contracts.ConnectionTester;
 import com.honmodmanager.services.contracts.EventAggregator;
 import com.honmodmanager.services.contracts.EventAggregatorHandler;
 import com.honmodmanager.services.contracts.GameInformation;
@@ -20,6 +21,8 @@ import com.honmodmanager.storage.contracts.Storage;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -51,6 +54,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
                                                                             EventAggregatorHandler<ModSelectedEvent>
 {
     private static final Logger LOG = Logger.getLogger(HomeControllerImpl.class.getName());
+
     private final LeftSideController leftSideController;
     private final GameInformation gameInformation;
     private final ModDetailsControllerFactory modDetailsControllerFactory;
@@ -59,9 +63,12 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private final ModUpdater modUpdater;
     private final ModWriter modWriter;
     private final Storage storage;
+    private final ConnectionTester connectionTester;
+
     private Subscription writerSubscription;
     private Subscription gameVersionSubscription;
     private Subscription updateSubscription;
+    private ModDetailsController selectedModDetailsController;
 
     @FXML
     private Button applyButton;
@@ -77,7 +84,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
 
     @FXML
     private Button updateAllButton;
-    private ModDetailsController selectedModDetailsController;
+    private Subscription internetConnectionObservable;
 
     @Autowired
     public HomeControllerImpl(LeftSideController leftSideController,
@@ -87,7 +94,8 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
                               PlatformInteraction platformInteraction,
                               ModUpdater modUpdater,
                               ModWriter modWriter,
-                              Storage storage)
+                              Storage storage,
+                              ConnectionTester connectionTester)
     {
         this.leftSideController = leftSideController;
         this.modDetailsControllerFactory = modDetailsControllerFactory;
@@ -97,6 +105,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         this.modUpdater = modUpdater;
         this.modWriter = modWriter;
         this.storage = storage;
+        this.connectionTester = connectionTester;
     }
 
     @Override
@@ -105,7 +114,27 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         this.loadGameVersion();
         this.loadViews();
 
+        this.updateAllButton.setDisable(true);
         this.eventAggregator.Subscribe(this);
+
+        try
+        {
+            this.internetConnectionObservable = this.connectionTester
+                    .TestUrl(new URI("http://www.google.com"))
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(b ->
+                            {
+                                this.executeOnUIThread(() ->
+                                        {
+                                            LOG.info(String.format("Googe host status: %b", b));
+                                            this.updateAllButton.setDisable(!b);
+                                });
+                    });
+        }
+        catch (URISyntaxException ex)
+        {
+            LOG.log(Level.WARNING, ex.getMessage(), ex);
+        }
     }
 
     @Override
@@ -117,6 +146,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         this.gameVersionSubscription.unsubscribe();
         this.updateSubscription.unsubscribe();
         this.writerSubscription.unsubscribe();
+        this.internetConnectionObservable.unsubscribe();
     }
 
     private void loadViews()
