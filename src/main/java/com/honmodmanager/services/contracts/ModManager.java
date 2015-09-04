@@ -1,6 +1,7 @@
 package com.honmodmanager.services.contracts;
 
 import com.honmodmanager.models.contracts.Mod;
+import java.io.IOException;
 import java.nio.file.Path;
 import rx.Observable;
 
@@ -13,7 +14,7 @@ public interface ModManager
 {
     Observable<Boolean> apply();
 
-    void add(Path path);
+    void add(Path path) throws IOException;
 
     Observable<Mod> getAll();
 

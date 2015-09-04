@@ -27,9 +27,13 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ResourceBundle;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -40,13 +44,13 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Pair;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import rx.Observable;
 import rx.Subscription;
+import rx.operators.OperationWindow;
 import rx.schedulers.Schedulers;
 
 /**
@@ -94,6 +98,9 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
 
     @FXML
     private Button updateAllButton;
+
+    @FXML
+    private Label dragMessage;
 
     @Autowired
     public HomeControllerImpl(LeftSideController leftSideController,
@@ -310,16 +317,20 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     {
         try
         {
-            this.dragAndDropOverlay.setVisible(true);
             Dragboard db = event.getDragboard();
-
             if (db.hasFiles())
             {
                 List<File> files = new List(db.getFiles());
-
-                if (files.all(x ->
-                        FilenameUtils.getExtension(x.getAbsolutePath()).equals("honmod")))
+                if (files.all(x -> FilenameUtils
+                        .getExtension(x.getAbsolutePath())
+                        .equals("honmod")))
                 {
+                    String mods = String.join(", ", files.select(x ->
+                                              FilenameUtils.getBaseName(x.getName())));
+
+                    this.dragMessage.setText(String.format("Add %s", mods));
+                    this.dragAndDropOverlay.setVisible(true);
+
                     event.acceptTransferModes(TransferMode.COPY);
                 }
             }
@@ -333,32 +344,59 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     @FXML
     private void handleDragExited(DragEvent event)
     {
-        this.dragAndDropOverlay.setVisible(false);
-
-        event.consume();
+        try
+        {
+            this.dragAndDropOverlay.setVisible(false);
+            this.dragMessage.setText("");
+        }
+        finally
+        {
+            event.consume();
+        }
     }
 
     @FXML
-    private void handleDragDropped(DragEvent event)
+    private void handleDragDone(DragEvent event)
     {
         try
         {
             this.dragAndDropOverlay.setVisible(false);
-
-            Dragboard db = event.getDragboard();
-
-            if (db.hasFiles())
-            {
-                for (File file : db.getFiles())
-                {
-                    this.modManager.add(file.toPath());
-                }
-            }
+            this.dragMessage.setText("");
         }
         finally
         {
-            event.setDropCompleted(true);
             event.consume();
         }
+    }
+
+    @FXML
+    private void handleDragDropped(DragEvent event) throws IOException
+    {
+        try
+        {
+            Dragboard db = event.getDragboard();
+            if (db.hasFiles())
+            {
+                List<File> files = new List<>(db.getFiles());
+
+                File[] validFiles = files.where(x ->
+                        FilenameUtils.getExtension(x.getAbsolutePath())
+                        .equals("honmod"))
+                        .toArray(File.class);
+
+                for (File file : validFiles)
+                {
+                    this.modManager.add(file.toPath());
+                }
+
+                event.setDropCompleted(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+
+        event.consume();
     }
 }
