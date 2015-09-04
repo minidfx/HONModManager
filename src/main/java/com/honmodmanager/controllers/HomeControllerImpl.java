@@ -17,7 +17,6 @@ import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.ModManager;
 import com.honmodmanager.services.contracts.ModUpdater;
 import com.honmodmanager.services.contracts.PlatformInteraction;
-import com.honmodmanager.storage.contracts.Storage;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -72,7 +71,6 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private final PlatformInteraction platformInteraction;
     private final ModUpdater modUpdater;
     private final ModManager modManager;
-    private final Storage storage;
     private final ConnectionTester connectionTester;
 
     private Subscription writerSubscription;
@@ -109,7 +107,6 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
                               EventAggregator eventAggregator,
                               PlatformInteraction platformInteraction,
                               ModUpdater modUpdater,
-                              Storage storage,
                               ConnectionTester connectionTester,
                               ModManager modManager)
     {
@@ -119,7 +116,6 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         this.eventAggregator = eventAggregator;
         this.platformInteraction = platformInteraction;
         this.modUpdater = modUpdater;
-        this.storage = storage;
         this.connectionTester = connectionTester;
         this.modManager = modManager;
     }
@@ -255,7 +251,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
             this.updateAllButton.setDisable(true);
         });
 
-        List<Mod> mods = this.storage.getMods();
+        List<Mod> mods = this.modManager.getCached();
         List<Observable<Pair<Mod, File>>> observables = new List<>();
 
         for (Mod mod : mods)

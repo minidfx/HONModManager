@@ -8,7 +8,6 @@ import com.honmodmanager.controllers.contracts.LeftSideController;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.EventAggregator;
 import com.honmodmanager.services.contracts.ModManager;
-import com.honmodmanager.storage.contracts.Storage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -41,7 +40,6 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
     private final ModManager modManager;
     private final LeftModRowControllerFactory leftModRowControllerFactory;
     private final EventAggregator eventAggregator;
-    private final Storage storage;
 
     @FXML
     public BorderPane progressIndicator;
@@ -53,14 +51,12 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
     public LeftSideControllerImpl(ModManager modManager,
                                   LeftModRowControllerFactory leftModRowControllerFactory,
                                   EventAggregator eventAggregator,
-                                  Storage storage)
     {
         this.controllers = new List<>();
 
         this.modManager = modManager;
         this.leftModRowControllerFactory = leftModRowControllerFactory;
         this.eventAggregator = eventAggregator;
-        this.storage = storage;
     }
 
     @Override
@@ -118,9 +114,6 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
                 {
                     this.listMod.getItems().add(view);
                 });
-
-                // Add the mod into the storage
-                this.storage.addMod(m);
             }
             catch (IOException ex)
             {
