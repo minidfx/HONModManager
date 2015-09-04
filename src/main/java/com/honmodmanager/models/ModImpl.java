@@ -5,6 +5,7 @@ import com.github.jlinqer.collections.List;
 import com.honmodmanager.models.contracts.CopyFileElement;
 import com.honmodmanager.models.contracts.EditFileElement;
 import com.honmodmanager.models.contracts.Mod;
+import com.honmodmanager.models.contracts.ModRequierement;
 import com.honmodmanager.models.contracts.Requierement;
 import com.honmodmanager.models.contracts.Version;
 import java.net.URI;
@@ -18,7 +19,7 @@ public final class ModImpl implements Mod
     private final Version version;
     private boolean isEnabled;
     private final List<String> incompatibillities;
-    private final List<String> requiredMods;
+    private final List<ModRequierement> requiredMods;
     private final Dictionary<String, Version> applyAfter;
     private final Dictionary<String, Version> applyBefore;
 
@@ -201,15 +202,15 @@ public final class ModImpl implements Mod
     }
 
     @Override
-    public List<String> getRequiredMods()
+    public List<ModRequierement> getRequiredMods()
     {
         return this.requiredMods;
     }
 
     @Override
-    public void addRequirement(String modId)
+    public void addRequirement(ModRequierement requierement)
     {
-        this.requiredMods.add(modId);
+        this.requiredMods.add(requierement);
     }
 
     @Override

@@ -95,4 +95,16 @@ public final class VersionImpl implements Version
     {
         return this.isNull;
     }
+
+    @Override
+    public boolean isSame(Version version)
+    {
+        if (this.isNull || version.isNull())
+            return true;
+
+        return this.major == version.getMajor()
+               && this.minor == version.getMinor()
+               && this.fix == version.getFix()
+               && this.build == version.getBuild();
+    }
 }

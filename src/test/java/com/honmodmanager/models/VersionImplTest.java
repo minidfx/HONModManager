@@ -111,4 +111,22 @@ public final class VersionImplTest extends TestCase
             assertFalse(String.format("%s > %s", this.instance, version), this.instance.lowerThan(version));
         }
     }
+
+    public void testIsSame()
+    {
+        Version aVersion = new VersionImpl(1, 2, 3, 4);
+        assertTrue(this.instance.isSame(aVersion));
+    }
+
+    public void testIsSame_with_instance_version_and_version_passed_as_null()
+    {
+        Version nullVersion = new VersionImpl(0, 0, 0, 0);
+        assertTrue(this.instance.isSame(nullVersion));
+    }
+
+    public void testIsSame_with_tested_version_as_null()
+    {
+        Version primaryVersion = new VersionImpl(0, 0, 0, 0);
+        assertTrue(primaryVersion.isSame(this.instance));
+    }
 }

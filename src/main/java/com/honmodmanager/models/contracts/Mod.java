@@ -6,7 +6,6 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Date;
 import javafx.scene.image.Image;
-import javafx.util.Pair;
 
 /**
  *
@@ -183,9 +182,9 @@ public interface Mod
 
     void addIncompatibillity(String modId);
 
-    List<String> getRequiredMods();
+    List<ModRequierement> getRequiredMods();
 
-    void addRequirement(String modId);
+    void addRequirement(ModRequierement requierement);
 
     Dictionary<String, Version> getApplyAfter();
 

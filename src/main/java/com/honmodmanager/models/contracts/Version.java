@@ -52,6 +52,14 @@ public interface Version
     boolean lowerThan(Version version);
 
     /**
+     * Determines whether the version is equals to the passed it.
+     *
+     * @param version
+     * @return
+     */
+    boolean isSame(Version version);
+
+    /**
      * Determines whether the version is null, it means that you can't compare
      * this version with another.
      *
