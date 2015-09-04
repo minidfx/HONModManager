@@ -1,6 +1,7 @@
 package com.honmodmanager.controllers;
 
 import com.github.jlinqer.collections.List;
+import com.honmodmanager.contracts.ApplicationState;
 import com.honmodmanager.controllers.contracts.HomeController;
 import com.honmodmanager.controllers.contracts.LeftSideController;
 import com.honmodmanager.controllers.contracts.ModDetailsController;
@@ -26,13 +27,8 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ResourceBundle;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -42,6 +38,7 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.FileChooser;
 import javafx.util.Pair;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +46,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import rx.Observable;
 import rx.Subscription;
-import rx.operators.OperationWindow;
 import rx.schedulers.Schedulers;
 
 /**
@@ -72,15 +68,21 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private final ModUpdater modUpdater;
     private final ModManager modManager;
     private final ConnectionTester connectionTester;
+    private final ApplicationState applicationState;
+
+    private ModDetailsController selectedModDetailsController;
 
     private Subscription writerSubscription;
     private Subscription gameVersionSubscription;
     private Subscription updateSubscription;
-    private ModDetailsController selectedModDetailsController;
-    private Subscription internetConnectionObservable;
+    private Subscription internetConnectionSubscription;
+    private Subscription applySubscription;
 
     @FXML
     private Button applyButton;
+
+    @FXML
+    private Button addButton;
 
     @FXML
     private BorderPane leftPane;
@@ -108,7 +110,8 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
                               PlatformInteraction platformInteraction,
                               ModUpdater modUpdater,
                               ConnectionTester connectionTester,
-                              ModManager modManager)
+                              ModManager modManager,
+                              ApplicationState applicationState)
     {
         this.leftSideController = leftSideController;
         this.modDetailsControllerFactory = modDetailsControllerFactory;
@@ -118,6 +121,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         this.modUpdater = modUpdater;
         this.connectionTester = connectionTester;
         this.modManager = modManager;
+        this.applicationState = applicationState;
     }
 
     @Override
@@ -133,7 +137,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
 
         try
         {
-            this.internetConnectionObservable = this.connectionTester
+            this.internetConnectionSubscription = this.connectionTester
                     .TestUrl(new URI("http://www.google.com"))
                     .subscribeOn(Schedulers.io())
                     .subscribe(b ->
@@ -160,7 +164,8 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         this.gameVersionSubscription.unsubscribe();
         this.updateSubscription.unsubscribe();
         this.writerSubscription.unsubscribe();
-        this.internetConnectionObservable.unsubscribe();
+        this.internetConnectionSubscription.unsubscribe();
+        this.applySubscription.unsubscribe();
     }
 
     private void loadViews()
@@ -294,6 +299,17 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private void handleApplyAction(ActionEvent event)
     {
         this.applyButton.setDisable(true);
+
+        this.applySubscription = this.modManager.apply()
+                .subscribeOn(Schedulers.io())
+                .subscribe(x ->
+                        {
+                            this.executeOnUIThread(() ->
+                                    this.applyButton.setDisable(!x));
+                }, e ->
+                           {
+                               LOG.log(Level.SEVERE, e.getMessage(), e);
+                });
     }
 
     @FXML
@@ -303,9 +319,26 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     }
 
     @FXML
-    private void handleAddButton(ActionEvent event)
+    private void handleAddButton(ActionEvent event) throws IOException
     {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        this.addButton.setDisable(true);
+
+        try
+        {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Heroes of Newerth Mod (*.hondmod)", "*.honmod"));
+
+            File fileChoosen = fileChooser.showOpenDialog(this.applicationState.getPrimaryStage());
+
+            if (fileChoosen != null)
+            {
+                this.modManager.add(fileChoosen.toPath());
+            }
+        }
+        finally
+        {
+            this.addButton.setDisable(false);
+        }
     }
 
     @FXML

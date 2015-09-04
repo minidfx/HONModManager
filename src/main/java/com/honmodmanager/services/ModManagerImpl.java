@@ -1,5 +1,6 @@
 package com.honmodmanager.services;
 
+import com.github.jlinqer.collections.List;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.ModManager;
@@ -64,5 +65,10 @@ public final class ModManagerImpl implements ModManager
     public Observable<Mod> getAll()
     {
         return this.modReader.getMods();
+    }
+
+    public List<Mod> getCached()
+    {
+        return this.modReader.getCachedMods();
     }
 }

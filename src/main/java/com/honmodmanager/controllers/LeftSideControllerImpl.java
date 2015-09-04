@@ -50,7 +50,7 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
     @Autowired
     public LeftSideControllerImpl(ModManager modManager,
                                   LeftModRowControllerFactory leftModRowControllerFactory,
-                                  EventAggregator eventAggregator,
+                                  EventAggregator eventAggregator)
     {
         this.controllers = new List<>();
 

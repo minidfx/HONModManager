@@ -1,5 +1,7 @@
 package com.honmodmanager.services;
 
+import com.honmodmanager.ModManagerState;
+import com.honmodmanager.contracts.ApplicationState;
 import com.honmodmanager.controllers.contracts.HomeController;
 import com.honmodmanager.models.SizeImpl;
 import com.honmodmanager.models.contracts.Size;
@@ -61,6 +63,12 @@ public final class BootstrapperImpl implements Bootstrapper
     {
         LOG.info("Starting application ...");
         LOG.info("Resolving and initializing the HomeController ...");
+
+        // Create the application state
+        ApplicationState applicationState = this.springApplicationContext.getBean(ApplicationState.class);
+
+        // Keep the primary stage reference
+        applicationState.setPrimaryStage(stage);
 
         // Create the main controller
         HomeController mainController = this.springApplicationContext.getBean(HomeController.class);

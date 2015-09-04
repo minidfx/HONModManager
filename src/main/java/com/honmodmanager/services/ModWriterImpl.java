@@ -82,9 +82,7 @@ public final class ModWriterImpl implements ModWriter
 
             try
             {
-                List<Mod> mods = new List(this.modReader.getMods()
-                        .toBlockingObservable()
-                        .toIterable());
+                List<Mod> mods = this.modReader.getCachedMods();
 
                 IEnumerable<Mod> enabledMods = mods.where(x -> x.isEnabled());
 
@@ -102,8 +100,6 @@ public final class ModWriterImpl implements ModWriter
                 try
                 {
                     this.zipCommentsBuilder.init();
-
-                    this.AddReminder();
 
                     for (Mod mod : sortedMods)
                     {
@@ -126,6 +122,7 @@ public final class ModWriterImpl implements ModWriter
                         additionalResource.setComment(this.zipCommentsBuilder.build());
                     }
 
+                    subscriber.onNext(true);
                     subscriber.onCompleted();
                 }
                 finally

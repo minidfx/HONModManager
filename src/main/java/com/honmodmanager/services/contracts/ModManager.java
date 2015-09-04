@@ -1,5 +1,6 @@
 package com.honmodmanager.services.contracts;
 
+import com.github.jlinqer.collections.List;
 import com.honmodmanager.models.contracts.Mod;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -19,4 +20,6 @@ public interface ModManager
     Observable<Mod> getAll();
 
     void remove(Mod mod);
+
+    List<Mod> getCached();
 }
