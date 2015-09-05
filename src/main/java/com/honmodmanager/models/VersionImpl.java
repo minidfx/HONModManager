@@ -54,7 +54,7 @@ public final class VersionImpl implements Version
     public boolean greaterThan(Version version)
     {
         if (this.isNull || version.isNull())
-            throw new UnsupportedOperationException("Cannot compare a null version.");
+            return false;
 
         int foreignVersion = Integer.valueOf(String.format("%d%d%d%d",
                                                            version.getMajor(),
@@ -74,7 +74,7 @@ public final class VersionImpl implements Version
     public boolean lowerThan(Version version)
     {
         if (this.isNull || version.isNull())
-            throw new UnsupportedOperationException("Cannot compare a null version.");
+            return false;
 
         int foreignVersion = Integer.valueOf(String.format("%d%d%d%d",
                                                            version.getMajor(),

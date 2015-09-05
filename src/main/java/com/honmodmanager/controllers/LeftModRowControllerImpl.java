@@ -98,4 +98,13 @@ public final class LeftModRowControllerImpl extends FXmlControllerBase implement
             }
         }
     }
+
+    @Override
+    public void refresh()
+    {
+        this.name.setText(this.model.getName());
+        this.version.setText(this.model.getVersion().toString());
+        this.icon.setImage(this.model.getIcon());
+        this.enabled.setVisible(this.model.isEnabled());
+    }
 }

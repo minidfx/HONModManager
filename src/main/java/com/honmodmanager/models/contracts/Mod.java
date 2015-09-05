@@ -158,14 +158,14 @@ public interface Mod
      *
      * @return
      */
-    Requierement getGameVersion();
+    Requirement getGameVersion();
 
     /**
      * Sets the version of the game.
      *
      * @param value
      */
-    void setGameVersion(Requierement value);
+    void setGameVersion(Requirement value);
 
     /**
      * Gets the version of the mod.
@@ -182,9 +182,9 @@ public interface Mod
 
     void addIncompatibillity(String modId);
 
-    List<ModRequierement> getRequiredMods();
+    List<ModRequirement> getRequiredMods();
 
-    void addRequirement(ModRequierement requierement);
+    void addRequirement(ModRequirement requierement);
 
     Dictionary<String, Version> getApplyAfter();
 

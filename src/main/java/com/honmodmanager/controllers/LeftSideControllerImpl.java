@@ -2,11 +2,15 @@ package com.honmodmanager.controllers;
 
 import com.honmodmanager.events.ModSelectedEvent;
 import com.github.jlinqer.collections.List;
+import com.github.jlinqer.linq.IEnumerable;
 import com.honmodmanager.controllers.contracts.LeftModRowController;
 import com.honmodmanager.controllers.contracts.LeftModRowControllerFactory;
 import com.honmodmanager.controllers.contracts.LeftSideController;
+import com.honmodmanager.events.ModUpdatedEvent;
+import com.honmodmanager.events.UpdateRowDisplayAction;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.EventAggregator;
+import com.honmodmanager.services.contracts.EventAggregatorHandler;
 import com.honmodmanager.services.contracts.ModManager;
 import java.io.IOException;
 import java.net.URL;
@@ -14,6 +18,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -32,7 +37,7 @@ import rx.Observable;
  */
 @Scope("singleton")
 @Service
-public final class LeftSideControllerImpl extends FXmlControllerBase implements LeftSideController
+public final class LeftSideControllerImpl extends FXmlControllerBase implements LeftSideController, EventAggregatorHandler<ModUpdatedEvent>
 {
     private static final Logger LOG = Logger.getLogger(LeftSideControllerImpl.class.getName());
 
@@ -64,6 +69,8 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
     {
         this.fillMods();
         this.listenSelection();
+
+        this.eventAggregator.Subscribe(this);
     }
 
     @Override
@@ -81,10 +88,7 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
                 Parent oldValue,
                 Parent newValue) ->
                 {
-                    LeftModRowController controller = this.controllers.single(c ->
-                            {
-                                return c.getFXMLoader().getRoot().equals(newValue);
-                    });
+                    LeftModRowController controller = this.getModRowController(newValue);
 
                     Mod modSelected = controller.getModel();
                     LOG.info(String.format("Mod %s selected.", modSelected.getName()));
@@ -94,6 +98,29 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
                 });
     }
 
+    private LeftModRowController getModRowController(Parent view)
+    {
+        return this.controllers.single(c ->
+        {
+            return c.getFXMLoader().getRoot().equals(view);
+        });
+    }
+
+    private void addItem(Mod mod) throws IOException
+    {
+        LeftModRowController leftModRowController = this.leftModRowControllerFactory.Create(mod);
+
+        FXMLLoader fXMLLoader = leftModRowController.loadView("/views/ListModRowView.fxml");
+        Parent view = fXMLLoader.getRoot();
+
+        this.controllers.add(leftModRowController);
+
+        this.executeOnUIThread(() ->
+        {
+            this.listMod.getItems().add(view);
+        });
+    }
+
     private void fillMods()
     {
         Observable<Mod> observableMods = this.modManager.getAll();
@@ -101,19 +128,9 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
         // Subscribe to the observable for updating the list
         observableMods.subscribe((Mod m) ->
         {
-            LeftModRowController leftModRowController = this.leftModRowControllerFactory.Create(m);
-
             try
             {
-                FXMLLoader fXMLLoader = leftModRowController.loadView("/views/ListModRowView.fxml");
-                Parent view = fXMLLoader.getRoot();
-
-                this.controllers.add(leftModRowController);
-
-                this.executeOnUIThread(() ->
-                {
-                    this.listMod.getItems().add(view);
-                });
+                this.addItem(m);
             }
             catch (IOException ex)
             {
@@ -131,5 +148,20 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
                                                  this.progressIndicator.setVisible(false);
                                      });
                                  });
+    }
+
+    @Override
+    public void handleEvent(ModUpdatedEvent event)
+    {
+        if (event.getAction() == UpdateRowDisplayAction.EnableDisable)
+        {
+            this.executeOnUIThread(() ->
+            {
+                for (LeftModRowController controller : this.controllers)
+                {
+                    controller.refresh();
+                }
+            });
+        }
     }
 }

@@ -17,7 +17,6 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.ResourceBundle;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.event.ActionEvent;
@@ -39,13 +38,15 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
                                                                                   EventAggregatorHandler<ModUpdatedEvent>
 {
     private static final Logger LOG = Logger.getLogger(ModDetailsControllerImpl.class.getName());
+
     private final Mod model;
     private final PlatformInteraction platformInteraction;
     private final EventAggregator eventAggregator;
     private final ModUpdater modUpdater;
     private final ModEnabler modEnabler;
-    private Subscription internetConnectionObservable;
     private final ConnectionTester connectionTester;
+
+    private Subscription internetConnectionObservable;
 
     @FXML
     private Label title;

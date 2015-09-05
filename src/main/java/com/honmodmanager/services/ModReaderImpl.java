@@ -7,9 +7,10 @@ import com.honmodmanager.exceptions.ModsFolderNotFoundException;
 import com.honmodmanager.models.CopyFileElementImpl;
 import com.honmodmanager.models.EditFileElementImpl;
 import com.honmodmanager.models.ModImpl;
+import com.honmodmanager.models.ModRequirementImpl;
 import com.honmodmanager.models.contracts.EditOperation;
 import com.honmodmanager.models.contracts.Mod;
-import com.honmodmanager.models.contracts.Requierement;
+import com.honmodmanager.models.contracts.Requirement;
 import com.honmodmanager.models.contracts.Version;
 import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.ModIdBuilder;
@@ -276,7 +277,7 @@ public final class ModReaderImpl implements ModReader
         String modName = modificationElement.getAttribute("name");
         String modId = this.modIdBuilder.build(modName);
 
-        Requierement appVersion = this.requierementParser.parse(modificationElement.getAttribute("appversion"));
+        Requirement appVersion = this.requierementParser.parse(modificationElement.getAttribute("appversion"));
         Version mmVersion = this.versionParser.parse(modificationElement.getAttribute("mmversion"));
         Version modVersion = this.versionParser.parse(modificationElement.getAttribute("version"));
 
@@ -310,7 +311,7 @@ public final class ModReaderImpl implements ModReader
         mod.setGameVersion(appVersion);
 
         readIncompatibillitiesElements(xml, mod);
-        readRequierementElements(xml, mod);
+        readRequirementElements(xml, mod);
         readApplyBeforeElements(xml, mod);
         readApplyAfterElements(xml, mod);
         readCopyFileElements(xml, mod);
@@ -383,7 +384,7 @@ public final class ModReaderImpl implements ModReader
         for (int l = 0; l < applyAfter.getLength(); l++)
         {
             Element element = (Element) applyAfter.item(l);
-            String applyAfterModId = element.getAttribute("name");
+            String applyAfterModId = this.modIdBuilder.build(element.getAttribute("name"));
             Version applyAfterVersion = this.versionParser.parse(element.getAttribute("version"));
 
             mod.addApplyAfter(applyAfterModId, applyAfterVersion);
@@ -396,22 +397,23 @@ public final class ModReaderImpl implements ModReader
         for (int k = 0; k < applyBefore.getLength(); k++)
         {
             Element element = (Element) applyBefore.item(k);
-            String applyBeforeModId = element.getAttribute("name");
+            String applyBeforeModId = this.modIdBuilder.build(element.getAttribute("name"));
             Version applyBeforeVersion = this.versionParser.parse(element.getAttribute("version"));
 
             mod.addApplyBefore(applyBeforeModId, applyBeforeVersion);
         }
     }
 
-    private void readRequierementElements(Document xml, Mod mod)
+    private void readRequirementElements(Document xml, Mod mod) throws ParseException
     {
-        NodeList requirements = xml.getElementsByTagName("requierement");
+        NodeList requirements = xml.getElementsByTagName("requirement");
         for (int j = 0; j < requirements.getLength(); j++)
         {
             Element element = (Element) requirements.item(j);
-            String requiredModId = element.getAttribute("name");
+            String requiredModId = this.modIdBuilder.build(element.getAttribute("name"));
+            Requirement requirementVersions = this.requierementParser.parse(element.getAttribute("version"));
 
-            mod.addRequirement(requiredModId);
+            mod.addRequirement(new ModRequirementImpl(requiredModId, requirementVersions));
         }
     }
 
@@ -421,7 +423,7 @@ public final class ModReaderImpl implements ModReader
         for (int i = 0; i < incompatibilities.getLength(); i++)
         {
             Element element = (Element) incompatibilities.item(i);
-            String incompatibleModId = element.getAttribute("name");
+            String incompatibleModId = this.modIdBuilder.build(element.getAttribute("name"));
 
             mod.addIncompatibillity(incompatibleModId);
         }

@@ -5,8 +5,8 @@ import com.github.jlinqer.collections.List;
 import com.honmodmanager.models.contracts.CopyFileElement;
 import com.honmodmanager.models.contracts.EditFileElement;
 import com.honmodmanager.models.contracts.Mod;
-import com.honmodmanager.models.contracts.ModRequierement;
-import com.honmodmanager.models.contracts.Requierement;
+import com.honmodmanager.models.contracts.ModRequirement;
+import com.honmodmanager.models.contracts.Requirement;
 import com.honmodmanager.models.contracts.Version;
 import java.net.URI;
 import java.nio.file.Path;
@@ -19,7 +19,7 @@ public final class ModImpl implements Mod
     private final Version version;
     private boolean isEnabled;
     private final List<String> incompatibillities;
-    private final List<ModRequierement> requiredMods;
+    private final List<ModRequirement> requiredMods;
     private final Dictionary<String, Version> applyAfter;
     private final Dictionary<String, Version> applyBefore;
 
@@ -31,7 +31,7 @@ public final class ModImpl implements Mod
     private URI versionAddress;
     private URI downloadAddress;
     private Version modVersion;
-    private Requierement gameVersion;
+    private Requirement gameVersion;
     private String modId;
     private Path filePath;
     private List<CopyFileElement> copyElements;
@@ -172,13 +172,13 @@ public final class ModImpl implements Mod
     }
 
     @Override
-    public Requierement getGameVersion()
+    public Requirement getGameVersion()
     {
         return this.gameVersion;
     }
 
     @Override
-    public void setGameVersion(Requierement value)
+    public void setGameVersion(Requirement value)
     {
         this.gameVersion = value;
     }
@@ -202,13 +202,13 @@ public final class ModImpl implements Mod
     }
 
     @Override
-    public List<ModRequierement> getRequiredMods()
+    public List<ModRequirement> getRequiredMods()
     {
         return this.requiredMods;
     }
 
     @Override
-    public void addRequirement(ModRequierement requierement)
+    public void addRequirement(ModRequirement requierement)
     {
         this.requiredMods.add(requierement);
     }

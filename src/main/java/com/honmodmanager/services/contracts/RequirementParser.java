@@ -1,6 +1,6 @@
 package com.honmodmanager.services.contracts;
 
-import com.honmodmanager.models.contracts.Requierement;
+import com.honmodmanager.models.contracts.Requirement;
 import java.text.ParseException;
 
 /**
@@ -9,5 +9,5 @@ import java.text.ParseException;
  */
 public interface RequirementParser
 {
-    Requierement parse(String versions) throws ParseException;
+    Requirement parse(String versions) throws ParseException;
 }

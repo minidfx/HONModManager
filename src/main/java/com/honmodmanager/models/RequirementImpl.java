@@ -1,20 +1,20 @@
 package com.honmodmanager.models;
 
-import com.honmodmanager.models.contracts.Requierement;
+import com.honmodmanager.models.contracts.Requirement;
 import com.honmodmanager.models.contracts.Version;
 
-public final class RequierementImpl implements Requierement
+public final class RequirementImpl implements Requirement
 {
-    private Version minium;
-    private Version maximum;
+    private final Version minium;
+    private final Version maximum;
 
-    public RequierementImpl(Version minium)
+    public RequirementImpl(Version minium)
     {
         this.minium = minium;
         this.maximum = minium;
     }
 
-    public RequierementImpl(Version minium, Version maximum)
+    public RequirementImpl(Version minium, Version maximum)
     {
         this.minium = minium;
         this.maximum = maximum;

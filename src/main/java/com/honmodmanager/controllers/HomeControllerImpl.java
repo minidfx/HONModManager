@@ -232,6 +232,23 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         }
     }
 
+    private void apply()
+    {
+        this.applyButton.setDisable(true);
+
+        this.applySubscription = this.modManager.apply()
+                .subscribeOn(Schedulers.io())
+                .subscribe(x ->
+                        {
+                            this.executeOnUIThread(() ->
+                                    this.applyButton.setDisable(!x));
+                }, e ->
+                           {
+                               LOG.log(Level.SEVERE, e.getMessage(), e);
+                               this.applyButton.setDisable(false);
+                });
+    }
+
     @FXML
     private void handleOpenModsFolderAction(ActionEvent event)
     {
@@ -298,18 +315,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     @FXML
     private void handleApplyAction(ActionEvent event)
     {
-        this.applyButton.setDisable(true);
-
-        this.applySubscription = this.modManager.apply()
-                .subscribeOn(Schedulers.io())
-                .subscribe(x ->
-                        {
-                            this.executeOnUIThread(() ->
-                                    this.applyButton.setDisable(!x));
-                }, e ->
-                           {
-                               LOG.log(Level.SEVERE, e.getMessage(), e);
-                });
+        this.apply();
     }
 
     @FXML

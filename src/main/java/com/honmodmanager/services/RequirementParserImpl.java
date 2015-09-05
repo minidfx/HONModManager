@@ -1,7 +1,7 @@
 package com.honmodmanager.services;
 
-import com.honmodmanager.models.RequierementImpl;
-import com.honmodmanager.models.contracts.Requierement;
+import com.honmodmanager.models.RequirementImpl;
+import com.honmodmanager.models.contracts.Requirement;
 import com.honmodmanager.models.contracts.Version;
 import com.honmodmanager.services.contracts.RequirementParser;
 import com.honmodmanager.services.contracts.VersionParser;
@@ -23,18 +23,18 @@ public final class RequirementParserImpl implements RequirementParser
     }
 
     @Override
-    public Requierement parse(String requierement) throws ParseException
+    public Requirement parse(String requierement) throws ParseException
     {
         if (!requierement.contains("-"))
         {
             Version minimumVersion = this.versionParser.parse(requierement);
-            return new RequierementImpl(minimumVersion);
+            return new RequirementImpl(minimumVersion);
         }
 
         String[] versions = requierement.split("-");
         Version mininumVersion = this.versionParser.parse(versions[0]);
         Version maximumVersion = this.versionParser.parse(versions[1]);
 
-        return new RequierementImpl(mininumVersion, maximumVersion);
+        return new RequirementImpl(mininumVersion, maximumVersion);
     }
 }

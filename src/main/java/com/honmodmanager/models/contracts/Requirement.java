@@ -4,7 +4,7 @@ package com.honmodmanager.models.contracts;
  *
  * @author Burgy Benjamin
  */
-public interface Requierement
+public interface Requirement
 {
     Version getMininum();
 

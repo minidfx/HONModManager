@@ -4,9 +4,9 @@ package com.honmodmanager.models.contracts;
  *
  * @author Burgy Benjamin
  */
-public interface ModRequierement
+public interface ModRequirement
 {
     String getModId();
 
-    Requierement getRequierement();
+    Requirement getRequirement();
 }

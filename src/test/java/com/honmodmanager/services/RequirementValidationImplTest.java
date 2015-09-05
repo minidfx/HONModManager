@@ -1,6 +1,6 @@
 package com.honmodmanager.services;
 
-import com.honmodmanager.models.RequierementImpl;
+import com.honmodmanager.models.RequirementImpl;
 import com.honmodmanager.models.VersionImpl;
 import com.honmodmanager.models.contracts.Version;
 import junit.framework.TestCase;
@@ -9,12 +9,12 @@ import junit.framework.TestCase;
  *
  * @author Burgy Benjamin
  */
-public class RequierementValidationImplTest extends TestCase
+public final class RequirementValidationImplTest extends TestCase
 {
-    private RequierementValidationImpl instance;
-    private RequierementImpl fakeRequierement;
+    private RequirementValidationImpl instance;
+    private RequirementImpl fakeRequirement;
 
-    public RequierementValidationImplTest(String testName)
+    public RequirementValidationImplTest(String testName)
     {
         super(testName);
     }
@@ -24,8 +24,8 @@ public class RequierementValidationImplTest extends TestCase
     {
         super.setUp();
 
-        this.instance = new RequierementValidationImpl();
-        this.fakeRequierement = new RequierementImpl(new VersionImpl(1, 0, 0, 0), new VersionImpl(2, 0, 0, 0));
+        this.instance = new RequirementValidationImpl();
+        this.fakeRequirement = new RequirementImpl(new VersionImpl(1, 0, 0, 0), new VersionImpl(2, 0, 0, 0));
     }
 
     @Override
@@ -46,7 +46,7 @@ public class RequierementValidationImplTest extends TestCase
 
         for (Version valiVersion : validVersions)
         {
-            assertTrue(this.instance.isValid(valiVersion, this.fakeRequierement));
+            assertTrue(this.instance.isValid(valiVersion, this.fakeRequirement));
         }
     }
 
@@ -60,7 +60,7 @@ public class RequierementValidationImplTest extends TestCase
 
         for (Version invalidVersion : invalidVersions)
         {
-            assertFalse(this.instance.isValid(invalidVersion, this.fakeRequierement));
+            assertFalse(this.instance.isValid(invalidVersion, this.fakeRequirement));
         }
     }
 }

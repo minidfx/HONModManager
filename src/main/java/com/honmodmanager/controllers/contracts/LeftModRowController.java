@@ -15,4 +15,6 @@ public interface LeftModRowController extends FXmlController
      * @return
      */
     Mod getModel();
+
+    void refresh();
 }
