@@ -55,7 +55,7 @@ public final class ModWriterImpl implements ModWriter
     private void backupResources()
     {
         File resources = this.gameInformation.getAdditonalResourcePath().toFile();
-        File backupResources = new File(String.format("%s.bak", resources.toString()));
+        File backupResources = getBackupResource(resources);
 
         if (backupResources.exists())
             backupResources.delete();
@@ -64,13 +64,29 @@ public final class ModWriterImpl implements ModWriter
             resources.renameTo(backupResources);
     }
 
+    private File getBackupResource(File resources)
+    {
+        return new File(String.format("%s.bak", resources.toString()));
+    }
+
     private void restoreBackup()
     {
         File resources = this.gameInformation.getAdditonalResourcePath().toFile();
-        File backupResources = new File(String.format("%s.bak", resources.toString()));
+        File backupResources = getBackupResource(resources);
 
         if (backupResources.exists())
             backupResources.renameTo(resources);
+    }
+
+    private void removeBackup()
+    {
+        File resources = this.gameInformation.getAdditonalResourcePath().toFile();
+        File backupResources = getBackupResource(resources);
+
+        if (backupResources.exists())
+        {
+            backupResources.delete();
+        }
     }
 
     @Override
@@ -121,6 +137,8 @@ public final class ModWriterImpl implements ModWriter
 
                         additionalResource.setComment(this.zipCommentsBuilder.build());
                     }
+
+                    this.removeBackup();
 
                     subscriber.onNext(true);
                     subscriber.onCompleted();
@@ -205,6 +223,9 @@ public final class ModWriterImpl implements ModWriter
     {
         try (ByteArrayOutputStream bytes = new ByteArrayOutputStream())
         {
+            // Remove the first slash whether it exists
+            entryPath = entryPath.replaceFirst("^(/?)", "");
+
             ZipEntry zipEntry = zipFile.getEntry(entryPath);
             if (zipEntry == null)
                 throw new ZipException(String.format("Entry %s not found.", entryPath));

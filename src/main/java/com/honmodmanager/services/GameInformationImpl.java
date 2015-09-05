@@ -314,7 +314,7 @@ public final class GameInformationImpl implements GameInformation
     @Override
     public Path getAdditonalResourcePath()
     {
-        return Paths.get(this.getFolderPath().toString(), "resources999.s2z");
+        return Paths.get(this.getPreferencesFolderPath().toString(), "resources999.s2z");
     }
 
     @Override
