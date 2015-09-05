@@ -6,10 +6,8 @@ import com.honmodmanager.controllers.contracts.HomeController;
 import com.honmodmanager.controllers.contracts.LeftSideController;
 import com.honmodmanager.controllers.contracts.ModDetailsController;
 import com.honmodmanager.controllers.contracts.ModDetailsControllerFactory;
-import com.honmodmanager.events.ModActivationEvent;
 import com.honmodmanager.events.ModSelectedEvent;
 import com.honmodmanager.events.ModUpdateFailedEvent;
-import com.honmodmanager.events.ModEnableDisableEvent;
 import com.honmodmanager.events.ModUpdatedEvent;
 import com.honmodmanager.events.ModUpdatingEvent;
 import com.honmodmanager.models.contracts.Mod;
@@ -63,7 +61,6 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private static final Logger LOG = Logger.getLogger(HomeControllerImpl.class.getName());
 
     private EventAggregatorHandler<ModSelectedEvent> modSelectedEvent;
-    private EventAggregatorHandler<ModActivationEvent> modActivationEvent;
 
     private final LeftSideController leftSideController;
     private final GameInformation gameInformation;
@@ -198,18 +195,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
             }
         };
 
-        this.modActivationEvent = new EventAggregatorHandler<ModActivationEvent>()
-        {
-            @Override
-            public void handleEvent(ModActivationEvent event)
-            {
-                mainInstance.dirtyMessage.setText("You have to apply modification.");
-                mainInstance.dirtyMessage.setVisible(true);
-            }
-        };
-
         this.eventAggregator.subscribe(this.modSelectedEvent);
-        this.eventAggregator.subscribe(this.modActivationEvent);
     }
 
     @Override
@@ -224,7 +210,6 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         this.applySubscription.unsubscribe();
 
         this.eventAggregator.unsubscribe(this.modSelectedEvent);
-        this.eventAggregator.unsubscribe(this.modActivationEvent);
     }
 
     private void loadViews()

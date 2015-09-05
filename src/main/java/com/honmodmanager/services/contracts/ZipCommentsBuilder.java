@@ -13,4 +13,6 @@ public interface ZipCommentsBuilder
     void addMod(Mod mod);
 
     String build();
+
+    String getLineModAppliedSeparator();
 }
