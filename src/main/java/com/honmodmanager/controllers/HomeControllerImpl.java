@@ -6,9 +6,12 @@ import com.honmodmanager.controllers.contracts.HomeController;
 import com.honmodmanager.controllers.contracts.LeftSideController;
 import com.honmodmanager.controllers.contracts.ModDetailsController;
 import com.honmodmanager.controllers.contracts.ModDetailsControllerFactory;
+import com.honmodmanager.events.ModActivationEvent;
 import com.honmodmanager.events.ModSelectedEvent;
+import com.honmodmanager.events.ModUpdateFailedEvent;
+import com.honmodmanager.events.ModEnableDisableEvent;
 import com.honmodmanager.events.ModUpdatedEvent;
-import com.honmodmanager.events.UpdateRowDisplayAction;
+import com.honmodmanager.events.ModUpdatingEvent;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.models.contracts.Version;
 import com.honmodmanager.services.contracts.ConnectionTester;
@@ -55,10 +58,12 @@ import rx.schedulers.Schedulers;
  */
 @Scope("singleton")
 @Service
-public final class HomeControllerImpl extends FXmlControllerBase implements HomeController,
-                                                                            EventAggregatorHandler<ModSelectedEvent>
+public final class HomeControllerImpl extends FXmlControllerBase implements HomeController
 {
     private static final Logger LOG = Logger.getLogger(HomeControllerImpl.class.getName());
+
+    private EventAggregatorHandler<ModSelectedEvent> modSelectedEvent;
+    private EventAggregatorHandler<ModActivationEvent> modActivationEvent;
 
     private final LeftSideController leftSideController;
     private final GameInformation gameInformation;
@@ -102,6 +107,9 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     @FXML
     private Label dragMessage;
 
+    @FXML
+    private Label dirtyMessage;
+
     @Autowired
     public HomeControllerImpl(LeftSideController leftSideController,
                               ModDetailsControllerFactory modDetailsControllerFactory,
@@ -128,12 +136,11 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     public void initialize(URL url, ResourceBundle rb)
     {
         this.dragAndDropOverlay.setVisible(false);
+        this.dirtyMessage.setVisible(false);
+        this.updateAllButton.setDisable(true);
 
         this.loadGameVersion();
         this.loadViews();
-
-        this.updateAllButton.setDisable(true);
-        this.eventAggregator.Subscribe(this);
 
         try
         {
@@ -153,6 +160,56 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         {
             LOG.log(Level.WARNING, ex.getMessage(), ex);
         }
+
+        this.subscribeToEventAggregator();
+    }
+
+    private void subscribeToEventAggregator()
+    {
+        // I didn't find another solution for registering the anonymous type
+        // with the EventAggregator. The lambda expression doesn't work too.
+        // So currently I initialized a local variable of the current instance.
+        HomeControllerImpl mainInstance = this;
+
+        this.modSelectedEvent = new EventAggregatorHandler<ModSelectedEvent>()
+        {
+            @Override
+            public void handleEvent(ModSelectedEvent event)
+            {
+                if (mainInstance.selectedModDetailsController != null)
+                {
+                    mainInstance.selectedModDetailsController.release();
+                }
+
+                mainInstance.selectedModDetailsController = mainInstance.modDetailsControllerFactory.Create(event.getModel());
+
+                try
+                {
+                    FXMLLoader modDetailsControllerFxmlLoader = selectedModDetailsController.loadView("/views/ModDetailsView.fxml");
+                    mainInstance.executeOnUIThread(() ->
+                    {
+                        mainInstance.centerPane.setCenter(modDetailsControllerFxmlLoader.getRoot());
+                    });
+                }
+                catch (IOException ex)
+                {
+                    LOG.log(Level.SEVERE, ex.getMessage(), ex);
+                }
+            }
+        };
+
+        this.modActivationEvent = new EventAggregatorHandler<ModActivationEvent>()
+        {
+            @Override
+            public void handleEvent(ModActivationEvent event)
+            {
+                mainInstance.dirtyMessage.setText("You have to apply modification.");
+                mainInstance.dirtyMessage.setVisible(true);
+            }
+        };
+
+        this.eventAggregator.subscribe(this.modSelectedEvent);
+        this.eventAggregator.subscribe(this.modActivationEvent);
     }
 
     @Override
@@ -160,12 +217,14 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     {
         super.release();
 
-        this.eventAggregator.unsubscribe(this);
         this.gameVersionSubscription.unsubscribe();
         this.updateSubscription.unsubscribe();
         this.writerSubscription.unsubscribe();
         this.internetConnectionSubscription.unsubscribe();
         this.applySubscription.unsubscribe();
+
+        this.eventAggregator.unsubscribe(this.modSelectedEvent);
+        this.eventAggregator.unsubscribe(this.modActivationEvent);
     }
 
     private void loadViews()
@@ -206,30 +265,6 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
                                                                                        this.hONVersion.setText("Error!");
                                                                            });
                                                                        });
-    }
-
-    @Override
-    public void handleEvent(ModSelectedEvent event)
-    {
-        if (this.selectedModDetailsController != null)
-        {
-            this.selectedModDetailsController.release();
-        }
-
-        this.selectedModDetailsController = this.modDetailsControllerFactory.Create(event.getModel());
-
-        try
-        {
-            FXMLLoader modDetailsControllerFxmlLoader = selectedModDetailsController.loadView("/views/ModDetailsView.fxml");
-            this.executeOnUIThread(() ->
-            {
-                this.centerPane.setCenter(modDetailsControllerFxmlLoader.getRoot());
-            });
-        }
-        catch (IOException ex)
-        {
-            LOG.log(Level.SEVERE, ex.getMessage(), ex);
-        }
     }
 
     private void apply()
@@ -279,7 +314,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         for (Mod mod : mods)
         {
             observables.add(this.modUpdater.Update(mod));
-            this.eventAggregator.Publish(new ModUpdatedEvent(mod, UpdateRowDisplayAction.Updating));
+            this.eventAggregator.publish(new ModUpdatingEvent(mod));
         }
 
         Observable<Pair<Mod, File>> mergedObservable = Observable.merge(observables, Schedulers.io());
@@ -287,15 +322,14 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         this.updateSubscription = mergedObservable.subscribeOn(Schedulers.io())
                 .subscribe(r ->
                         {
-                            this.eventAggregator.Publish(new ModUpdatedEvent(r.getKey(), UpdateRowDisplayAction.Updated));
+                            this.eventAggregator.publish(new ModUpdatedEvent(r.getKey()));
                 }, e ->
                            {
                                LOG.log(Level.SEVERE, e.getMessage(), e);
 
                                for (Mod mod : mods)
                                {
-                                   this.eventAggregator.Publish(new ModUpdatedEvent(mod,
-                                                                                    UpdateRowDisplayAction.UpdateFailed));
+                                   this.eventAggregator.publish(new ModUpdateFailedEvent(mod));
                                }
 
                                this.executeOnUIThread(() ->

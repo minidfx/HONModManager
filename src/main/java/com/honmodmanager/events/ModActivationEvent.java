@@ -6,16 +6,16 @@ import com.honmodmanager.models.contracts.Mod;
  *
  * @author Burgy Benjamin
  */
-public final class ModUpdatedEvent
+public final class ModActivationEvent
 {
     private final Mod mod;
 
-    public ModUpdatedEvent(Mod mod)
+    public ModActivationEvent(Mod mod)
     {
         this.mod = mod;
     }
 
-    public Mod getMod()
+    public Mod getModel()
     {
         return mod;
     }

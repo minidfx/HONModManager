@@ -6,11 +6,11 @@ import com.honmodmanager.models.contracts.Mod;
  *
  * @author Burgy Benjamin
  */
-public final class ModUpdatedEvent
+public final class ModEnableDisableEvent
 {
     private final Mod mod;
 
-    public ModUpdatedEvent(Mod mod)
+    public ModEnableDisableEvent(Mod mod)
     {
         this.mod = mod;
     }

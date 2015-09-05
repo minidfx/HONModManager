@@ -2,12 +2,10 @@ package com.honmodmanager.controllers;
 
 import com.honmodmanager.events.ModSelectedEvent;
 import com.github.jlinqer.collections.List;
-import com.github.jlinqer.linq.IEnumerable;
 import com.honmodmanager.controllers.contracts.LeftModRowController;
 import com.honmodmanager.controllers.contracts.LeftModRowControllerFactory;
 import com.honmodmanager.controllers.contracts.LeftSideController;
-import com.honmodmanager.events.ModUpdatedEvent;
-import com.honmodmanager.events.UpdateRowDisplayAction;
+import com.honmodmanager.events.ModEnableDisableEvent;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.EventAggregator;
 import com.honmodmanager.services.contracts.EventAggregatorHandler;
@@ -18,7 +16,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -37,7 +34,7 @@ import rx.Observable;
  */
 @Scope("singleton")
 @Service
-public final class LeftSideControllerImpl extends FXmlControllerBase implements LeftSideController, EventAggregatorHandler<ModUpdatedEvent>
+public final class LeftSideControllerImpl extends FXmlControllerBase implements LeftSideController
 {
     private static final Logger LOG = Logger.getLogger(LeftSideControllerImpl.class.getName());
 
@@ -45,6 +42,7 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
     private final ModManager modManager;
     private final LeftModRowControllerFactory leftModRowControllerFactory;
     private final EventAggregator eventAggregator;
+    private EventAggregatorHandler<ModEnableDisableEvent> modEnableDisableEvent;
 
     @FXML
     public BorderPane progressIndicator;
@@ -70,7 +68,29 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
         this.fillMods();
         this.listenSelection();
 
-        this.eventAggregator.Subscribe(this);
+        this.subscribeToEventAggregator();
+    }
+
+    private void subscribeToEventAggregator()
+    {
+        LeftSideControllerImpl mainInstance = this;
+
+        this.modEnableDisableEvent = new EventAggregatorHandler<ModEnableDisableEvent>()
+        {
+            @Override
+            public void handleEvent(ModEnableDisableEvent event)
+            {
+                mainInstance.executeOnUIThread(() ->
+                {
+                    for (LeftModRowController controller : mainInstance.controllers)
+                    {
+                        controller.refresh();
+                    }
+                });
+            }
+        };
+
+        this.eventAggregator.subscribe(this.modEnableDisableEvent);
     }
 
     @Override
@@ -78,7 +98,7 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
     {
         super.release();
 
-        this.eventAggregator.unsubscribe(this);
+        this.eventAggregator.unsubscribe(this.modEnableDisableEvent);
     }
 
     private void listenSelection()
@@ -94,7 +114,7 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
                     LOG.info(String.format("Mod %s selected.", modSelected.getName()));
 
                     // Notify the controller responsible for displaying details of the mod selected.
-                    this.eventAggregator.Publish(new ModSelectedEvent(modSelected));
+                    this.eventAggregator.publish(new ModSelectedEvent(modSelected));
                 });
     }
 
@@ -148,20 +168,5 @@ public final class LeftSideControllerImpl extends FXmlControllerBase implements 
                                                  this.progressIndicator.setVisible(false);
                                      });
                                  });
-    }
-
-    @Override
-    public void handleEvent(ModUpdatedEvent event)
-    {
-        if (event.getAction() == UpdateRowDisplayAction.EnableDisable)
-        {
-            this.executeOnUIThread(() ->
-            {
-                for (LeftModRowController controller : this.controllers)
-                {
-                    controller.refresh();
-                }
-            });
-        }
     }
 }

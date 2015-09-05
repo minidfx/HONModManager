@@ -1,8 +1,9 @@
 package com.honmodmanager.controllers;
 
 import com.honmodmanager.controllers.contracts.ModDetailsController;
+import com.honmodmanager.events.ModEnableDisableEvent;
 import com.honmodmanager.events.ModUpdatedEvent;
-import com.honmodmanager.events.UpdateRowDisplayAction;
+import com.honmodmanager.events.ModUpdatingEvent;
 import com.honmodmanager.exceptions.ModActivationException;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.ConnectionTester;
@@ -34,8 +35,7 @@ import rx.schedulers.Schedulers;
  *
  * @author Burgy Benjamin
  */
-public final class ModDetailsControllerImpl extends FXmlControllerBase implements ModDetailsController,
-                                                                                  EventAggregatorHandler<ModUpdatedEvent>
+public final class ModDetailsControllerImpl extends FXmlControllerBase implements ModDetailsController
 {
     private static final Logger LOG = Logger.getLogger(ModDetailsControllerImpl.class.getName());
 
@@ -45,6 +45,8 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
     private final ModUpdater modUpdater;
     private final ModEnabler modEnabler;
     private final ConnectionTester connectionTester;
+    private EventAggregatorHandler<ModUpdatedEvent> modUpdatedEvent;
+    private EventAggregatorHandler<ModEnableDisableEvent> modEnableDisableEvent;
 
     private Subscription internetConnectionObservable;
 
@@ -113,7 +115,6 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
         else
             this.date.setText("");
 
-        this.eventAggregator.Subscribe(this);
         this.internetConnectionObservable = this.connectionTester
                 .TestUrl(this.model.getVersionAddress())
                 .subscribeOn(Schedulers.io())
@@ -125,6 +126,40 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
                                         this.updateButton.setDisable(!b);
                             });
                 });
+
+        this.subscribeToEventAggregator();
+    }
+
+    private void subscribeToEventAggregator()
+    {
+        ModDetailsControllerImpl mainInstance = this;
+
+        this.modUpdatedEvent = new EventAggregatorHandler<ModUpdatedEvent>()
+        {
+            @Override
+            public void handleEvent(ModUpdatedEvent event)
+            {
+                mainInstance.executeOnUIThread(() ->
+                {
+                    mainInstance.updateButton.setDisable(false);
+                });
+            }
+        };
+
+        this.modEnableDisableEvent = new EventAggregatorHandler<ModEnableDisableEvent>()
+        {
+            @Override
+            public void handleEvent(ModEnableDisableEvent event)
+            {
+                mainInstance.executeOnUIThread(() ->
+                {
+                    mainInstance.updateButton.setDisable(true);
+                });
+            }
+        };
+
+        this.eventAggregator.subscribe(this.modUpdatedEvent);
+        this.eventAggregator.subscribe(this.modEnableDisableEvent);
     }
 
     @Override
@@ -132,10 +167,10 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
     {
         super.release();
 
-        this.eventAggregator.unsubscribe(this);
-        this.internetConnectionObservable.unsubscribe();
+        this.eventAggregator.unsubscribe(this.modUpdatedEvent);
+        this.eventAggregator.unsubscribe(this.modEnableDisableEvent);
 
-        LOG.info("Controller released");
+        this.internetConnectionObservable.unsubscribe();
     }
 
     @FXML
@@ -183,13 +218,13 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
                                                                     ParseException
     {
         this.updateButton.setDisable(true);
-        this.eventAggregator.Publish(new ModUpdatedEvent(this.model, UpdateRowDisplayAction.Updating));
+        this.eventAggregator.publish(new ModUpdatingEvent(this.model));
 
         this.modUpdater.Update(this.model)
                 .subscribeOn(Schedulers.io())
                 .subscribe(x ->
                         {
-                            this.eventAggregator.Publish(new ModUpdatedEvent(x.getKey(), UpdateRowDisplayAction.Updated));
+                            this.eventAggregator.publish(new ModUpdatedEvent(x.getKey()));
                 },
                            e ->
                            {
@@ -197,7 +232,8 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
                            },
                            () ->
                            {
-                               this.updateButton.setDisable(false);
+                               this.executeOnUIThread(() ->
+                                       this.updateButton.setDisable(false));
                            });
     }
 
@@ -214,7 +250,7 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
             else
                 this.modEnabler.disable(mod);
 
-            this.eventAggregator.Publish(new ModUpdatedEvent(mod, UpdateRowDisplayAction.EnableDisable));
+            this.eventAggregator.publish(new ModEnableDisableEvent(mod));
         }
         catch (ModActivationException ex)
         {
@@ -223,31 +259,6 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
             this.errorMessage.setVisible(true);
             this.errorMessage.setText(ex.getMessage());
             this.enabled.setSelected(!isEnabled);
-        }
-    }
-
-    @Override
-    public void handleEvent(ModUpdatedEvent event)
-    {
-        if (event.getMod() == this.model)
-        {
-            Runnable updateUI = null;
-
-            switch (event.getAction())
-            {
-                case Updating:
-                    updateUI = () -> this.updateButton.setDisable(true);
-                    break;
-
-                case Updated:
-                    updateUI = () -> this.updateButton.setDisable(false);
-                    break;
-            }
-
-            if (updateUI != null)
-            {
-                this.executeOnUIThread(updateUI);
-            }
         }
     }
 }

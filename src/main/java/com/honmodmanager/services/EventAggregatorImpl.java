@@ -23,7 +23,7 @@ public final class EventAggregatorImpl implements EventAggregator
     }
 
     @Override
-    public void Publish(Object o)
+    public void publish(Object o)
     {
         Type eventType = o.getClass();
 
@@ -39,8 +39,7 @@ public final class EventAggregatorImpl implements EventAggregator
 
     private Type[] getHandlerEventType(Object o)
     {
-        IEnumerable<ParameterizedType> eventAggregatorGenericTypes = new List(Arrays.asList(o.getClass().getGenericInterfaces())).where((
-                Object x) ->
+        IEnumerable<ParameterizedType> eventAggregatorGenericTypes = new List(Arrays.asList(o.getClass().getGenericInterfaces())).where(x ->
                 x instanceof ParameterizedType);
 
         IEnumerable<ParameterizedType> eventAggregatorInterfaces = eventAggregatorGenericTypes.where(x ->
@@ -62,11 +61,16 @@ public final class EventAggregatorImpl implements EventAggregator
     }
 
     @Override
-    public <TEvent, TSubscriber extends EventAggregatorHandler<TEvent>> void Subscribe(TSubscriber subscriber)
+    public <TEvent, TSubscriber extends EventAggregatorHandler<TEvent>> void subscribe(TSubscriber subscriber)
     {
         if (!this.subscribers.any(x -> x.getValue().equals(subscriber)))
         {
             Type[] eventTypes = this.getHandlerEventType(subscriber);
+
+            if (eventTypes.length < 1)
+            {
+                throw new UnsupportedOperationException("Event type not found.");
+            }
 
             for (Type eventType : eventTypes)
             {
