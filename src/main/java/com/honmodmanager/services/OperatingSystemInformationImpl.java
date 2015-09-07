@@ -1,13 +1,10 @@
 package com.honmodmanager.services;
 
-import com.honmodmanager.services.contracts.OperatingSystemInformation;
 import com.honmodmanager.services.contracts.OperatingSystem;
-import java.util.concurrent.TimeUnit;
+import com.honmodmanager.services.contracts.OperatingSystemInformation;
 import java.util.logging.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
 @Service
 @Scope("singleton")
@@ -20,21 +17,23 @@ public final class OperatingSystemInformationImpl implements OperatingSystemInfo
     @Override
     public OperatingSystem getOperatingSystem()
     {
-        if (this.operatingSystem == null)
+        if(this.operatingSystem != null)
         {
-            String operatingSystemName = System.getProperty("os.name").trim();
-
-            if (operatingSystemName.equals("Mac OS X"))
-                this.operatingSystem = OperatingSystem.MacOSx;
-
-            if (operatingSystemName.equals("Windows"))
-                this.operatingSystem = OperatingSystem.Windows;
-
-            if (operatingSystemName.contains("nix") || operatingSystemName.contains("nux"))
-                this.operatingSystem = OperatingSystem.Linux;
+            return this.operatingSystem;
         }
+        
+        String operatingSystemName = System.getProperty("os.name").trim();
 
-        return this.operatingSystem;
+        if (operatingSystemName.equals("Mac OS X"))
+            return this.operatingSystem = OperatingSystem.MacOSx;
+
+        if (operatingSystemName.startsWith("Windows"))
+            return this.operatingSystem = OperatingSystem.Windows;
+
+        if (operatingSystemName.contains("nix") || operatingSystemName.contains("nux"))
+            return this.operatingSystem = OperatingSystem.Linux;
+
+        throw new UnsupportedOperationException("Cannot determines the operating system.");
     }
 
     @Override

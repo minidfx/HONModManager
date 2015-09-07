@@ -1,9 +1,9 @@
 package com.honmodmanager.services;
 
-import com.honmodmanager.exceptions.MalformedModException;
 import com.github.jlinqer.collections.List;
 import com.github.jlinqer.linq.IEnumerable;
 import com.honmodmanager.events.ModEnableDisableEvent;
+import com.honmodmanager.exceptions.MalformedModException;
 import com.honmodmanager.exceptions.MalformedZipCommentsException;
 import com.honmodmanager.exceptions.ModsFolderNotFoundException;
 import com.honmodmanager.models.CopyFileElementImpl;
@@ -158,7 +158,6 @@ public final class ModReaderImpl implements ModReader
                                                                           SAXException
     {
         File modsFolder = this.gameInformation.getModsFolder().toFile();
-
         if (!modsFolder.exists())
             throw new ModsFolderNotFoundException();
 
