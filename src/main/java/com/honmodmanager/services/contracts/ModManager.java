@@ -22,4 +22,6 @@ public interface ModManager
     void remove(Mod mod);
 
     List<Mod> getCached();
+
+    void clean();
 }

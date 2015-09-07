@@ -6,6 +6,7 @@ import com.honmodmanager.controllers.contracts.HomeController;
 import com.honmodmanager.controllers.contracts.LeftSideController;
 import com.honmodmanager.controllers.contracts.ModDetailsController;
 import com.honmodmanager.controllers.contracts.ModDetailsControllerFactory;
+import com.honmodmanager.events.ModEnableDisableEvent;
 import com.honmodmanager.events.ModSelectedEvent;
 import com.honmodmanager.events.ModUpdateFailedEvent;
 import com.honmodmanager.events.ModUpdatedEvent;
@@ -105,7 +106,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private Label dragMessage;
 
     @FXML
-    private Label dirtyMessage;
+    private Label globalMessageErrorMessage;
 
     @Autowired
     public HomeControllerImpl(LeftSideController leftSideController,
@@ -133,7 +134,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     public void initialize(URL url, ResourceBundle rb)
     {
         this.dragAndDropOverlay.setVisible(false);
-        this.dirtyMessage.setVisible(false);
+        this.globalMessageErrorMessage.setVisible(false);
         this.updateAllButton.setDisable(true);
 
         this.loadGameVersion();
@@ -266,6 +267,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
                            {
                                LOG.log(Level.SEVERE, e.getMessage(), e);
                                this.applyButton.setDisable(false);
+                               this.globalMessageErrorMessage.setText("No mod enabled to be applied.");
                 });
     }
 
@@ -335,6 +337,18 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     private void handleApplyAction(ActionEvent event)
     {
         this.apply();
+    }
+
+    @FXML
+    private void handleCleanAction(ActionEvent event)
+    {
+        this.modManager.clean();
+
+        List<Mod> mods = this.modManager.getCached();
+        for (Mod mod : mods)
+        {
+            this.eventAggregator.publish(new ModEnableDisableEvent(mod));
+        }
     }
 
     @FXML

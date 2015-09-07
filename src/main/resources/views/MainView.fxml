@@ -57,7 +57,8 @@
                   <Button mnemonicParsing="false" onAction="#handleApplyAndRunAction" text="Apply &amp; Run HON" />
                   <Button fx:id="updateAllButton" mnemonicParsing="false" onAction="#handleUpdateAllAction" text="Update All" />
                   <Button mnemonicParsing="false" onAction="#handleOpenModsFolderAction" text="Open Mods folder" />
-                  <Label fx:id="dirtyMessage" text="dirtyMessage" textFill="RED" />
+                  <Button fx:id="cleanButton" mnemonicParsing="false" onAction="#handleCleanAction" text="Clean" />
+                  <Label fx:id="globalMessageErrorMessage" text="dirtyMessage" textFill="RED" />
                </children>
                <opaqueInsets>
                   <Insets />

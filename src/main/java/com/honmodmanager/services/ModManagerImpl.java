@@ -71,4 +71,19 @@ public final class ModManagerImpl implements ModManager
     {
         return this.modReader.getCachedMods();
     }
+
+    @Override
+    public void clean()
+    {
+        for (Mod mod : this.modReader.getCachedMods())
+        {
+            mod.enabled(false);
+        }
+
+        File additionalResource = this.gameInformation.getAdditonalResourcePath().toFile();
+        if (additionalResource.exists())
+        {
+            additionalResource.delete();
+        }
+    }
 }
