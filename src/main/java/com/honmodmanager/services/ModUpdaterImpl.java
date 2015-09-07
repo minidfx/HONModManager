@@ -44,8 +44,8 @@ public final class ModUpdaterImpl implements ModUpdater
     public Observable<Pair<Mod, File>> Update(Mod mod) throws IOException,
                                                               MalformedURLException,
                                                               ParseException
-    {
-        return Observable.create(subscriber ->
+    {       
+        return Observable.create((Subscriber<? super Pair<Mod, File>> subscriber) ->
         {
             try
             {
