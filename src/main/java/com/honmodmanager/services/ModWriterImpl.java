@@ -4,6 +4,7 @@ import com.github.jlinqer.collections.List;
 import com.github.jlinqer.linq.IEnumerable;
 import com.honmodmanager.exceptions.ApplyModException;
 import com.honmodmanager.models.contracts.CopyFileElement;
+import com.honmodmanager.models.contracts.EditFileElement;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.ConditionEvaluator;
 import com.honmodmanager.services.contracts.GameInformation;
@@ -124,7 +125,10 @@ public final class ModWriterImpl implements ModWriter
                         try (ZipFile zipMod = new ZipFile(mod.getFilePath().toFile()))
                         {
                             List<Pair<String, byte[]>> copyFilesBytes = this.copyFiles(mod, zipMod);
+                            List<Pair<String, byte[]>> editFilesBytes = this.editFiles(mod, zipMod);
+
                             filesBytes.addAll(copyFilesBytes);
+                            filesBytes.addAll(editFilesBytes);
                         }
                     }
 
@@ -177,7 +181,20 @@ public final class ModWriterImpl implements ModWriter
 
     private List<Pair<String, byte[]>> editFiles(Mod mod, ZipFile zipMod) throws IOException
     {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        List<Pair<String, byte[]>> filesBytes = new List<>();
+
+        for (EditFileElement editFileElement : mod.getEditElements())
+        {
+            if (this.conditionEvaluator.evaluate(editFileElement.getCondition()))
+            {
+                final String zipEntryPath = editFileElement.getPath();
+                byte[] zipEntryBytes = this.getZipEntry(zipMod, zipEntryPath);
+
+                //byte[] result = this.applyEditAction(editFileElement, zipEntryBytes);
+            }
+        }
+
+        return filesBytes;
     }
 
     private List<Pair<String, byte[]>> copyFiles(Mod mod, ZipFile zipMod) throws IOException
@@ -244,4 +261,30 @@ public final class ModWriterImpl implements ModWriter
             }
         }
     }
+
+//        <editfile name="ui/mod_options_elements.package">  
+//        <find><![CDATA[<!-- INSERT AFTER THIS -->]]></find>
+//        <insert position="after">
+//            <![CDATA[
+//                <include file="/ui/optiui_options.package" />
+//            ]]>
+//        </insert>
+//    </editfile>
+//    private byte[] applyEditAction(EditFileElement editFileElement, byte[] zipEntryBytes)
+//    {
+//        // The entry as String
+//        String entry = new String(zipEntryBytes);
+//
+//    }
+//
+//    private int getPosition(EditFileElement editFileElement, String entry)
+//    {
+//        switch (editFileElement.getOperation())
+//        {
+//            case find:
+//            case seek:
+//            case search:
+//                return 
+//        }
+//    }
 }

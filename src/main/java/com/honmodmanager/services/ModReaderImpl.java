@@ -318,14 +318,10 @@ public final class ModReaderImpl implements ModReader
 
         for (int i = 0; i < nodes.getLength(); i++)
         {
-            try
+            Node node = nodes.item(i);
+            if (node instanceof Element)
             {
-                Element firstElement = (Element) nodes.item(i);
-                return firstElement;
-            }
-            catch (ClassCastException e)
-            {
-                // HACK: Didn't find another solution to find the first element.
+                return (Element) node;
             }
         }
 
