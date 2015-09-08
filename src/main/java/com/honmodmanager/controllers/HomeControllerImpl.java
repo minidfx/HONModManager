@@ -6,6 +6,7 @@ import com.honmodmanager.controllers.contracts.HomeController;
 import com.honmodmanager.controllers.contracts.LeftSideController;
 import com.honmodmanager.controllers.contracts.ModDetailsController;
 import com.honmodmanager.controllers.contracts.ModDetailsControllerFactory;
+import com.honmodmanager.events.ModCleanedEvent;
 import com.honmodmanager.events.ModEnableDisableEvent;
 import com.honmodmanager.events.ModSelectedEvent;
 import com.honmodmanager.events.ModUpdateFailedEvent;
@@ -349,6 +350,8 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         {
             this.eventAggregator.publish(new ModEnableDisableEvent(mod));
         }
+        
+        this.eventAggregator.publish(new ModCleanedEvent());
     }
 
     @FXML

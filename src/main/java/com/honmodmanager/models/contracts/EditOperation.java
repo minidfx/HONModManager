@@ -1,20 +1,15 @@
 package com.honmodmanager.models.contracts;
 
+import com.github.jlinqer.collections.List;
+import javafx.util.Pair;
+
 /**
  *
  * @author Burgy Benjamin
  */
-public enum EditOperation
+public interface EditOperation
 {
-    find,
-    seek,
-    search,
-    findup,
-    seekup,
-    searchup,
-    insert,
-    add,
-    replace,
-    delete,
-    findall
+    EditOperationType getOperationType();
+    List<Pair<String, String>> getAttributes();
+    String getText();
 }

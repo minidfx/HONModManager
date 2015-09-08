@@ -3,37 +3,27 @@ package com.honmodmanager.models;
 import com.github.jlinqer.collections.List;
 import com.honmodmanager.models.contracts.EditFileElement;
 import com.honmodmanager.models.contracts.EditOperation;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public final class EditFileElementImpl implements EditFileElement
 {
-    private EditOperation operation;
-    private List<Node> operand;
-    private String path;
-    private String condition;
+    private final List<EditOperation> operations;
+    private final String path;
+    private final String condition;
 
     public EditFileElementImpl(String path,
-                               EditOperation operation,
-                               List<Node> operand,
+                               List<EditOperation> operations,
                                String condition)
     {
-        this.path = path;
-        this.operation = operation;
-        this.operand = operand;
+        this.operations = operations;
         this.condition = condition;
+        
+        this.path = path.replaceFirst("^(/?)", "");
     }
 
     @Override
-    public EditOperation getOperation()
+    public List<EditOperation> getOperations()
     {
-        return this.operation;
-    }
-
-    @Override
-    public List<Node> getOperationOperand()
-    {
-        return this.operand;
+        return this.operations;
     }
 
     @Override

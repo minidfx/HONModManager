@@ -8,12 +8,15 @@ import com.honmodmanager.exceptions.MalformedZipCommentsException;
 import com.honmodmanager.exceptions.ModsFolderNotFoundException;
 import com.honmodmanager.models.CopyFileElementImpl;
 import com.honmodmanager.models.EditFileElementImpl;
+import com.honmodmanager.models.EditOperationImpl;
 import com.honmodmanager.models.ModImpl;
 import com.honmodmanager.models.ModRequirementImpl;
 import com.honmodmanager.models.contracts.EditOperation;
+import com.honmodmanager.models.contracts.EditOperationType;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.models.contracts.Requirement;
 import com.honmodmanager.models.contracts.Version;
+import com.honmodmanager.services.contracts.DocumentNavigator;
 import com.honmodmanager.services.contracts.EventAggregator;
 import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.ModIdBuilder;
@@ -38,6 +41,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import javafx.scene.image.Image;
+import javafx.util.Pair;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -45,6 +49,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -60,6 +65,7 @@ public final class ModReaderImpl implements ModReader
 {
     private static final Logger LOG = Logger.getLogger(ModReaderImpl.class.getName());
     private static final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+    private final DocumentNavigator documentNavigator;
 
     private final GameInformation gameInformation;
     private final VersionParser versionParser;
@@ -75,7 +81,8 @@ public final class ModReaderImpl implements ModReader
                          VersionParser versionParser,
                          RequirementParser requirementParser,
                          ModIdBuilder modIdBuilder,
-                         EventAggregator eventAggregator)
+                         EventAggregator eventAggregator,
+                         DocumentNavigator documentNavigator)
     {
         this.gameInformation = gameInformation;
         this.versionParser = versionParser;
@@ -86,6 +93,7 @@ public final class ModReaderImpl implements ModReader
 
         this.cachedMods = new List<>();
         this.eventAggregator = eventAggregator;
+        this.documentNavigator = documentNavigator;
     }
 
     @Override
@@ -311,22 +319,6 @@ public final class ModReaderImpl implements ModReader
         return mod;
     }
 
-    private Element getFirstChildElement(Element element)
-    {
-        NodeList nodes = element.getChildNodes();
-
-        for (int i = 0; i < nodes.getLength(); i++)
-        {
-            Node node = nodes.item(i);
-            if (node instanceof Element)
-            {
-                return (Element) node;
-            }
-        }
-
-        throw new UnsupportedOperationException("Cannot found the first element of an EditFileElement.");
-    }
-
     private void readEditFileElements(Document xml, Mod mod)
     {
         NodeList editFiles = xml.getElementsByTagName("editfile");
@@ -336,18 +328,38 @@ public final class ModReaderImpl implements ModReader
             String path = element.getAttribute("name");
             String condition = element.getAttribute("condition");
 
-            Element firstElement = this.getFirstChildElement(element);
-            EditOperation editOperation = EditOperation.valueOf(firstElement.getNodeName());
+            List<EditOperation> operations = new List<>();
 
-            List<Node> operands = new List<>();
-
-            for (int n = 1; n < element.getChildNodes().getLength(); n++)
+            for (int n = 0; n < element.getChildNodes().getLength(); n++)
             {
                 Node node = element.getChildNodes().item(n);
-                operands.add(node);
+                if(node instanceof Element)
+                {
+                    Element childElement = (Element)node;
+                    
+                    EditOperationType operationType = EditOperationType.valueOf(childElement.getNodeName());
+                    String text = childElement.getTextContent();
+                    List<Pair<String, String>> attributes = new List<>();
+                    
+                    for(int a=0; a < childElement.getAttributes().getLength(); a++)
+                    {
+                        node = childElement.getAttributes().item(a);
+                        if(node instanceof Attr)
+                        {
+                            Attr attribute = (Attr)node;
+                            String attributeName = attribute.getName();
+                            String attributeValue = attribute.getValue();
+                            
+                            attributes.add(new Pair<>(attributeName, attributeValue));
+                        }
+                    }
+                    
+                    EditOperation editOperation = new EditOperationImpl(operationType, attributes, text);
+                    operations.add(editOperation);
+                }
             }
 
-            mod.addEditElement(new EditFileElementImpl(path, editOperation, operands, condition));
+            mod.addEditElement(new EditFileElementImpl(path, operations, condition));
         }
     }
 

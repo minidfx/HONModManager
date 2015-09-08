@@ -1,6 +1,7 @@
 package com.honmodmanager.controllers;
 
 import com.honmodmanager.controllers.contracts.ModDetailsController;
+import com.honmodmanager.events.ModCleanedEvent;
 import com.honmodmanager.events.ModEnableDisableEvent;
 import com.honmodmanager.events.ModUpdatedEvent;
 import com.honmodmanager.events.ModUpdatingEvent;
@@ -38,15 +39,16 @@ import rx.schedulers.Schedulers;
 public final class ModDetailsControllerImpl extends FXmlControllerBase implements ModDetailsController
 {
     private static final Logger LOG = Logger.getLogger(ModDetailsControllerImpl.class.getName());
-
+    private EventAggregatorHandler<ModCleanedEvent> modCleanedEvent;
+    private EventAggregatorHandler<ModUpdatingEvent> modUpdatingEvent;
+    private EventAggregatorHandler<ModUpdatedEvent> modUpdatedEvent;
+    
     private final Mod model;
     private final PlatformInteraction platformInteraction;
     private final EventAggregator eventAggregator;
     private final ModUpdater modUpdater;
     private final ModEnabler modEnabler;
     private final ConnectionTester connectionTester;
-    private EventAggregatorHandler<ModUpdatedEvent> modUpdatedEvent;
-    private EventAggregatorHandler<ModEnableDisableEvent> modEnableDisableEvent;
 
     private Subscription internetConnectionObservable;
 
@@ -139,27 +141,43 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
             @Override
             public void handleEvent(ModUpdatedEvent event)
             {
-                mainInstance.executeOnUIThread(() ->
+                if(event.getMod().equals(mainInstance.model))
                 {
-                    mainInstance.updateButton.setDisable(false);
-                });
+                    mainInstance.executeOnUIThread(() ->
+                    {
+                        mainInstance.updateButton.setDisable(false);
+                    });
+                }
             }
         };
-
-        this.modEnableDisableEvent = new EventAggregatorHandler<ModEnableDisableEvent>()
+        
+        this.modUpdatingEvent = new EventAggregatorHandler<ModUpdatingEvent>()
         {
             @Override
-            public void handleEvent(ModEnableDisableEvent event)
+            public void handleEvent(ModUpdatingEvent event)
+            {
+                if(event.getMod().equals(mainInstance.model))
+                {
+                    mainInstance.updateButton.setDisable(true);
+                }
+            }
+        };
+        
+        this.modCleanedEvent = new EventAggregatorHandler<ModCleanedEvent>()
+        {
+            @Override
+            public void handleEvent(ModCleanedEvent event)
             {
                 mainInstance.executeOnUIThread(() ->
                 {
-                    mainInstance.updateButton.setDisable(true);
+                    mainInstance.refresh();
                 });
             }
         };
 
         this.eventAggregator.subscribe(this.modUpdatedEvent);
-        this.eventAggregator.subscribe(this.modEnableDisableEvent);
+        this.eventAggregator.subscribe(this.modUpdatingEvent);
+        this.eventAggregator.subscribe(this.modCleanedEvent);
     }
 
     @Override
@@ -168,9 +186,21 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
         super.release();
 
         this.eventAggregator.unsubscribe(this.modUpdatedEvent);
-        this.eventAggregator.unsubscribe(this.modEnableDisableEvent);
+        this.eventAggregator.unsubscribe(this.modUpdatingEvent);
+        this.eventAggregator.unsubscribe(this.modCleanedEvent);
 
         this.internetConnectionObservable.unsubscribe();
+    }
+    
+    private void refresh()
+    {
+        this.title.setText(this.model.getName());
+        this.version.setText(this.model.getVersion().toString());
+        this.description.setText(this.model.getDescription());
+        this.webLink.setText(this.model.getWebLink().toString());
+        this.downloadURL.setText(this.model.getDownloadAddress().toString());
+        this.updateURL.setText(this.model.getVersionAddress().toString());
+        this.enabled.setSelected(this.model.isEnabled());
     }
 
     @FXML
