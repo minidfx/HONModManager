@@ -2,9 +2,9 @@ package com.honmodmanager.services;
 
 import com.honmodmanager.models.VersionImpl;
 import com.honmodmanager.models.contracts.Version;
-import com.honmodmanager.services.contracts.OperatingSystemInformation;
 import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.OperatingSystem;
+import com.honmodmanager.services.contracts.OperatingSystemInformation;
 import com.honmodmanager.services.contracts.VersionParser;
 import java.io.File;
 import java.io.FileInputStream;
@@ -308,7 +308,7 @@ public final class GameInformationImpl implements GameInformation
     @Override
     public Path getOriginalResourcePath()
     {
-        return Paths.get(this.getFolderPath().toString(), "resources0.s2z");
+        return Paths.get(this.getFolderPath().toString(), "game", "resources0.s2z");
     }
 
     @Override
