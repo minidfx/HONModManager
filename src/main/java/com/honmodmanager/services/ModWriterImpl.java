@@ -1,11 +1,13 @@
 package com.honmodmanager.services;
 
+import com.github.jlinqer.collections.Dictionary;
 import com.github.jlinqer.collections.List;
 import com.github.jlinqer.linq.IEnumerable;
 import com.honmodmanager.exceptions.ApplyModException;
 import com.honmodmanager.models.contracts.CopyFileElement;
 import com.honmodmanager.models.contracts.EditFileElement;
 import com.honmodmanager.models.contracts.EditOperation;
+import com.honmodmanager.models.contracts.EditOperationType;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.ConditionEvaluator;
 import com.honmodmanager.services.contracts.GameInformation;
@@ -19,13 +21,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
-import javafx.util.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -65,10 +67,14 @@ public final class ModWriterImpl implements ModWriter
         File backupResources = getBackupResource(resources);
 
         if (backupResources.exists())
+        {
             backupResources.delete();
+        }
 
         if (resources.exists())
+        {
             resources.renameTo(backupResources);
+        }
     }
 
     private File getBackupResource(File resources)
@@ -82,7 +88,9 @@ public final class ModWriterImpl implements ModWriter
         File backupResources = getBackupResource(resources);
 
         if (backupResources.exists())
+        {
             backupResources.renameTo(resources);
+        }
     }
 
     private void removeBackup()
@@ -111,34 +119,43 @@ public final class ModWriterImpl implements ModWriter
                 IEnumerable<Mod> enabledMods = mods.where(x -> x.isEnabled());
 
                 if (!enabledMods.any())
+                {
                     throw new ApplyModException("No mod enabled found to be applied.");
+                }
 
                 IEnumerable<Mod> sortedMods = this.modSorter.sort(enabledMods);
-                List<Pair<String, byte[]>> filesBytes = new List<>();
+                Dictionary<String, byte[]> filesBytes = new Dictionary<>();
 
                 try
                 {
                     this.zipCommentsBuilder.init();
 
-                    for (Mod mod : sortedMods)
+                    try (ZipFile originalResource = new ZipFile(this.gameInformation.getOriginalResourcePath().toFile()))
                     {
-                        this.zipCommentsBuilder.addMod(mod);
-
-                        try (ZipFile originalResource = new ZipFile(this.gameInformation.getOriginalResourcePath().toFile()))
+                        for (Mod mod : sortedMods)
                         {
                             try (ZipFile zipMod = new ZipFile(mod.getFilePath().toFile()))
                             {
-                                List<Pair<String, byte[]>> copyFilesBytes = this.copyFiles(originalResource, zipMod, mod);
-                                filesBytes.addAll(copyFilesBytes);
+                                this.zipCommentsBuilder.addMod(mod);
 
-                                this.editFiles(mod, filesBytes);
+                                Dictionary<String, byte[]> files = this.copyFiles(originalResource, zipMod, mod);
+                                
+                                for(Entry<String, byte[]> file : files)
+                                {
+                                    filesBytes.put(file.getKey(), file.getValue());
+                                }
                             }
+                        }
+
+                        for (Mod mod : sortedMods)
+                        {
+                            this.editFiles(mod, filesBytes);
                         }
                     }
 
                     try (ZipOutputStream additionalResource = new ZipOutputStream(new FileOutputStream(this.gameInformation.getAdditonalResourcePath().toFile())))
                     {
-                        for (Pair<String, byte[]> fileBytes : filesBytes)
+                        for (Entry<String, byte[]> fileBytes : filesBytes)
                         {
                             this.AddZipEntry(additionalResource, fileBytes.getKey(), fileBytes.getValue());
                         }
@@ -155,7 +172,6 @@ public final class ModWriterImpl implements ModWriter
                 }
                 finally
                 {
-                    filesBytes.clear();
                     filesBytes = null;
                 }
             }
@@ -185,31 +201,30 @@ public final class ModWriterImpl implements ModWriter
         }
     }
 
-    private void editFiles(Mod mod, List<Pair<String, byte[]>> filesBytes) throws IOException
+    private void editFiles(Mod mod, Dictionary<String, byte[]> filesBytes) throws IOException, ApplyModException
     {
         for (EditFileElement editFileElement : mod.getEditElements())
         {
             if (this.conditionEvaluator.evaluate(editFileElement.getCondition()))
             {
                 final String zipEntryPath = editFileElement.getPath();
-                final Pair<String, byte[]> fileBytes = filesBytes.single(x ->
-                        x.getKey().equals(zipEntryPath));
+                final Entry<String, byte[]> fileBytes = filesBytes.single(x
+                        -> x.getKey().equals(zipEntryPath));
                 final byte[] zipEntryBytes = fileBytes.getValue();
 
-                byte[] bytes = this.applyEditAction(editFileElement, zipEntryBytes);
-                Pair<String, byte[]> newPair = new Pair<>(zipEntryPath, bytes);
+                byte[] bytes = this.applyEditOperations(editFileElement, zipEntryBytes);
 
                 filesBytes.remove(fileBytes);
-                filesBytes.add(newPair);
+                filesBytes.put(zipEntryPath, bytes);
 
                 LOG.info(String.format("Entry path %s edited.", zipEntryPath));
             }
         }
     }
 
-    private List<Pair<String, byte[]>> copyFiles(ZipFile originalResource, ZipFile zipMod, Mod mod) throws IOException
+    private Dictionary<String, byte[]> copyFiles(ZipFile originalResource, ZipFile zipMod, Mod mod) throws IOException
     {
-        List<Pair<String, byte[]>> filesBytes = new List<>();
+        Dictionary<String, byte[]> filesBytes = new Dictionary<>();
 
         for (CopyFileElement copyFileElement : mod.getCopyElements())
         {
@@ -218,12 +233,12 @@ public final class ModWriterImpl implements ModWriter
                 final String zipEntryPath = copyFileElement.getPath();
                 if (filesBytes.any(x -> x.getKey().equals(zipEntryPath)) && copyFileElement.overwrite())
                 {
-                    filesBytes.remove(filesBytes.single(x ->
-                            x.getKey().equals(zipEntryPath)));
+                    filesBytes.remove(filesBytes.single(x
+                            -> x.getKey().equals(zipEntryPath)));
                 }
 
                 byte[] zipEntryBytes = this.getZipEntry(zipMod, zipEntryPath);
-                filesBytes.add(new Pair<>(zipEntryPath, zipEntryBytes));
+                filesBytes.put(zipEntryPath, zipEntryBytes);
 
                 LOG.info(String.format("Entry path %s copied into the additional resources zip.", zipEntryPath));
             }
@@ -237,7 +252,7 @@ public final class ModWriterImpl implements ModWriter
                 byte[] zipEntryBytes = this.getZipEntry(originalResource, zipEntryPath);
                 if (!filesBytes.any(x -> x.getKey().equals(zipEntryPath)))
                 {
-                    filesBytes.add(new Pair<>(zipEntryPath, zipEntryBytes));
+                    filesBytes.put(zipEntryPath, zipEntryBytes);
 
                     LOG.info(String.format("Entry path %s copied into the additional resources zip.", zipEntryPath));
                 }
@@ -269,7 +284,9 @@ public final class ModWriterImpl implements ModWriter
         {
             ZipEntry zipEntry = zipFile.getEntry(entryPath);
             if (zipEntry == null)
+            {
                 throw new ZipException(String.format("Entry %s not found.", entryPath));
+            }
 
             try (InputStream zipEntryStream = zipFile.getInputStream(zipEntry))
             {
@@ -286,31 +303,89 @@ public final class ModWriterImpl implements ModWriter
         }
     }
 
-    private byte[] applyEditAction(EditFileElement editFileElement, byte[] entryBytes)
+    private byte[] applyEditOperations(EditFileElement editFileElement, byte[] entryBytes) throws ApplyModException
     {
         String entry = new String(entryBytes);
+        Integer lastPositionFound = null;
+        Integer findElementLength = null;
 
-        int position = this.getPosition(editFileElement, entry);
-        EditOperation firstOperation = editFileElement.getOperations().first();
-        EditOperation secondOperation = editFileElement.getOperations().skip(1).first();
-
-        switch (secondOperation.getOperationType())
+        for (EditOperation operation : editFileElement.getOperations())
         {
-            case insert:
-                String insertPosition = secondOperation.getAttributes().single(x ->
-                        x.getKey().equals("position")).getValue();
-                if (insertPosition.equals("after"))
-                {
-                    position += firstOperation.getText().length();
-                }
+            EditOperationType operationType = operation.getOperationType();
 
-                String insert = secondOperation.getText();
-                String resourceEdited = this.insert(entry, insert, position);
+            switch (operationType)
+            {
+                case find:
+                case search:
+                case seek:
+                    lastPositionFound = entry.indexOf(operation.getText());
+                    findElementLength = operation.getText().length();
+                    break;
 
-                return resourceEdited.getBytes();
+                case insert:
+                    entry = this.applyInsertOperation(entry, lastPositionFound, findElementLength, operation);
+
+                    lastPositionFound = null;
+                    findElementLength = null;
+                    break;
+
+                case delete:
+                    entry = this.applyDeleteOperation(entry, lastPositionFound, findElementLength);
+
+                    lastPositionFound = null;
+                    findElementLength = null;
+                    break;
+
+                default:
+                    throw new ApplyModException(String.format("Operation %s not implemented yet.", operationType));
+            }
         }
 
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return entry.getBytes();
+    }
+
+    private String applyDeleteOperation(String entry, Integer lastPositionFound, Integer findElementLength) throws ApplyModException
+    {
+        if (lastPositionFound == null || findElementLength == null)
+        {
+            throw new ApplyModException("A search operation is mandatory to delete a text.");
+        }
+
+        String toRemove = this.remove(entry, lastPositionFound, lastPositionFound + findElementLength);
+        return toRemove;
+    }
+
+    private String applyInsertOperation(String entry,
+                                        Integer lastPositionFound,
+                                        Integer findElementLength,
+                                        EditOperation operation) throws ApplyModException, IllegalArgumentException, UnsupportedOperationException
+    {
+        if (lastPositionFound == null || findElementLength == null)
+        {
+            throw new ApplyModException("A search operation is mandatory to insert a text.");
+        }
+
+        String insertPosition = operation.getAttributes().single(x -> x.getKey().equals("position")).getValue();
+        if (insertPosition.equals("after"))
+        {
+            lastPositionFound += findElementLength;
+        }
+
+        String insert = operation.getText();
+        entry = this.insert(entry, insert, lastPositionFound);
+
+        return entry;
+    }
+
+    private String remove(String base, int startPositin, int endPosition)
+    {
+        String firstPart = StringUtils.substring(base, 0, startPositin);
+        String secondPart = StringUtils.substring(base, endPosition);
+
+        return StringUtils.join(new String[]
+        {
+            firstPart, secondPart
+        });
     }
 
     private String insert(String base, String insert, int position)
@@ -322,20 +397,5 @@ public final class ModWriterImpl implements ModWriter
         {
             firstPart, insert, secondPart
         });
-    }
-
-    private int getPosition(EditFileElement editFileElement, String entry)
-    {
-        EditOperation firstOperation = editFileElement.getOperations().first();
-
-        switch (firstOperation.getOperationType())
-        {
-            case find:
-            case seek:
-            case search:
-                return entry.indexOf(firstOperation.getText());
-        }
-
-        throw new UnsupportedOperationException("Not implemented yet.");
     }
 }
