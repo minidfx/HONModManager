@@ -278,4 +278,10 @@ public final class ModImpl implements Mod
     {
         return this.editElements;
     }
+
+    @Override
+    public String toString()
+    {
+        return this.modId;
+    }
 }

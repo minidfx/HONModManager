@@ -253,7 +253,7 @@ public final class ModReaderImpl implements ModReader
         String id = this.modIdBuilder.build(name);
         Version version = this.versionParser.parse(matcher.group(2));
 
-        Mod newMod = new ModImpl(line, version, true);
+        Mod newMod = new ModImpl(name, version, true);
         newMod.setId(id);
 
         return newMod;

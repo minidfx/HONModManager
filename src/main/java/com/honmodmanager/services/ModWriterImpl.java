@@ -10,6 +10,7 @@ import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.ConditionEvaluator;
 import com.honmodmanager.services.contracts.GameInformation;
 import com.honmodmanager.services.contracts.ModReader;
+import com.honmodmanager.services.contracts.ModSorter;
 import com.honmodmanager.services.contracts.ModWriter;
 import com.honmodmanager.services.contracts.ZipCommentsBuilder;
 import java.io.ByteArrayOutputStream;
@@ -40,6 +41,7 @@ public final class ModWriterImpl implements ModWriter
     
     private final GameInformation gameInformation;
     private final ModReader modReader;
+    private final ModSorter modSorter;
     private final ZipCommentsBuilder zipCommentsBuilder;
     private final ConditionEvaluator conditionEvaluator;
 
@@ -47,12 +49,14 @@ public final class ModWriterImpl implements ModWriter
     public ModWriterImpl(GameInformation gameInformation,
                          ModReader modReader,
                          ZipCommentsBuilder zipCommentsBuilder,
-                         ConditionEvaluator conditionEvaluator)
+                         ConditionEvaluator conditionEvaluator,
+                         ModSorter modSorter)
     {
         this.gameInformation = gameInformation;
         this.modReader = modReader;
         this.zipCommentsBuilder = zipCommentsBuilder;
         this.conditionEvaluator = conditionEvaluator;
+        this.modSorter = modSorter;
     }
 
     private void backupResources()
@@ -109,11 +113,7 @@ public final class ModWriterImpl implements ModWriter
                 if (!enabledMods.any())
                     throw new ApplyModException("No mod enabled found to be applied.");
 
-                IEnumerable<Mod> sortedMods = enabledMods.orderBy(x ->
-                {
-                    return x.getApplyAfter()
-                            .equals(x.getId());
-                });
+                IEnumerable<Mod> sortedMods = this.modSorter.sort(mods);
 
                 List<Pair<String, byte[]>> filesBytes = new List<>();
 

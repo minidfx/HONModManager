@@ -10,6 +10,16 @@ public final class VersionImpl implements Version
     private final int build;
     private final boolean isNull;
 
+    public VersionImpl()
+    {
+        this.major = 0;
+        this.minor = 0;
+        this.fix = 0;
+        this.build = 0;
+        
+        this.isNull = true;
+    }
+    
     public VersionImpl(int major, int minor, int fix, int build)
     {
         this.major = major;
