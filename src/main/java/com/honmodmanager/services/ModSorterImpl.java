@@ -44,7 +44,6 @@ public final class ModSorterImpl implements ModSorter
 
             if (tempSortedList != null)
             {
-                sorted = null;
                 sorted = tempSortedList;
             }
 
@@ -71,7 +70,6 @@ public final class ModSorterImpl implements ModSorter
 
             if (tempSortedList != null)
             {
-                sorted = null;
                 sorted = tempSortedList;
             }
 
@@ -88,11 +86,21 @@ public final class ModSorterImpl implements ModSorter
             Mod currentMod = mods.get(i);
             if (currentMod.getId().equals(before.getId()))
             {
-                return this.insert(mods, insert, i);
+                return this.insertBefore(mods, insert, i);
             }
         }
 
-        throw new ModSortException("Cannot found the mod 'after'.");
+        throw new ModSortException("Cannot found the mod 'before'.");
+    }
+      
+    private List<Mod> insertBefore(List<Mod> mods, Mod mod, int index)
+    {
+        List<Mod> out = mods.toList();
+        
+        out.remove(mod);
+        out.add(index, mod);
+        
+        return out;
     }
 
     private List<Mod> insertAfter(List<Mod> mods, Mod after, Mod insert) throws ModSortException
@@ -102,19 +110,19 @@ public final class ModSorterImpl implements ModSorter
             Mod currentMod = mods.get(i);
             if (currentMod.getId().equals(after.getId()))
             {
-                return this.insert(mods, insert, i + 1);
+                return this.insertAfter(mods, insert, i+1);
             }
         }
 
         throw new ModSortException("Cannot found the mod 'after'.");
     }
 
-    private List<Mod> insert(List<Mod> mods, Mod mod, int index)
+    private List<Mod> insertAfter(List<Mod> mods, Mod mod, int index)
     {
         List<Mod> out = mods.toList();
 
-        out.remove(mod);
         out.add(index, mod);
+        out.remove(mod);
 
         return out;
     }
