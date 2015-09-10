@@ -1,6 +1,7 @@
 package com.honmodmanager.services;
 
 import com.github.jlinqer.collections.List;
+import com.github.jlinqer.linq.IEnumerable;
 import com.honmodmanager.exceptions.ModSortException;
 import com.honmodmanager.models.ModImpl;
 import com.honmodmanager.models.VersionImpl;
@@ -77,8 +78,8 @@ public final class ModSorterImplTest extends TestCase
         expectedMods.add(mod7);
         expectedMods.add(mod6);
 
-        List<Mod> sortedMods = this.instance.sort(mods);
+        IEnumerable<Mod> sortedMods = this.instance.sort(mods);
 
-        Assert.assertArrayEquals(expectedMods.toArray(), sortedMods.toArray());
+        Assert.assertArrayEquals(expectedMods.toArray(Mod.class), sortedMods.toArray(Mod.class));
     }
 }

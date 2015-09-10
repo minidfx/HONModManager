@@ -113,8 +113,7 @@ public final class ModWriterImpl implements ModWriter
                 if (!enabledMods.any())
                     throw new ApplyModException("No mod enabled found to be applied.");
 
-                IEnumerable<Mod> sortedMods = this.modSorter.sort(mods);
-
+                IEnumerable<Mod> sortedMods = this.modSorter.sort(enabledMods);
                 List<Pair<String, byte[]>> filesBytes = new List<>();
 
                 try

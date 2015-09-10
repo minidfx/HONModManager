@@ -2,6 +2,7 @@ package com.honmodmanager.services;
 
 import com.github.jlinqer.collections.Dictionary;
 import com.github.jlinqer.collections.List;
+import com.github.jlinqer.linq.IEnumerable;
 import com.honmodmanager.exceptions.ModSortException;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.models.contracts.Version;
@@ -19,8 +20,7 @@ import org.springframework.stereotype.Service;
 public final class ModSorterImpl implements ModSorter
 {
     @Override
-    @SuppressWarnings("empty-statement")
-    public List<Mod> sort(List<Mod> mods) throws ModSortException
+    public IEnumerable<Mod> sort(IEnumerable<Mod> mods) throws ModSortException
     {
         List<Mod> sorted = mods.toList();
 
@@ -76,7 +76,7 @@ public final class ModSorterImpl implements ModSorter
             modNotSorted.remove(currentMod);
         }
 
-        return sorted;
+        return sorted.toList();
     }
 
     private List<Mod> insertBefore(List<Mod> mods, Mod before, Mod insert) throws ModSortException
