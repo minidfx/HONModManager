@@ -15,19 +15,20 @@ import org.junit.Assert;
 public final class ModSorterImplTest extends TestCase
 {
     private ModSorterImpl instance;
+
     public ModSorterImplTest(String testName)
     {
         super(testName);
     }
-    
+
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
-        
+
         this.instance = new ModSorterImpl();
     }
-    
+
     @Override
     protected void tearDown() throws Exception
     {
@@ -41,13 +42,13 @@ public final class ModSorterImplTest extends TestCase
         Mod mod3 = new ModImpl("mod3", null, false);
         Mod mod4 = new ModImpl("mod4", null, false);
         Mod mod5 = new ModImpl("mod5", null, false);
-        
+
         mod1.setId("mod1");
         mod2.setId("mod2");
         mod3.setId("mod3");
         mod4.setId("mod4");
         mod5.setId("mod5");
-       
+
         // Currently, don't use the version for sorting mods.
         mod1.addApplyAfter("mod3", new VersionImpl());
         mod2.addApplyAfter("mod4", new VersionImpl());
@@ -66,9 +67,9 @@ public final class ModSorterImplTest extends TestCase
         expectedMods.add(mod4);
         expectedMods.add(mod1);
         expectedMods.add(mod2);
-        
+
         List<Mod> sortedMods = this.instance.sort(mods);
-       
+
         Assert.assertArrayEquals(expectedMods.toArray(), sortedMods.toArray());
     }
 }

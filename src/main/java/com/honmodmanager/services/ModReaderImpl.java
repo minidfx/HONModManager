@@ -333,27 +333,27 @@ public final class ModReaderImpl implements ModReader
             for (int n = 0; n < element.getChildNodes().getLength(); n++)
             {
                 Node node = element.getChildNodes().item(n);
-                if(node instanceof Element)
+                if (node instanceof Element)
                 {
-                    Element childElement = (Element)node;
-                    
+                    Element childElement = (Element) node;
+
                     EditOperationType operationType = EditOperationType.valueOf(childElement.getNodeName());
                     String text = childElement.getTextContent();
                     List<Pair<String, String>> attributes = new List<>();
-                    
-                    for(int a=0; a < childElement.getAttributes().getLength(); a++)
+
+                    for (int a = 0; a < childElement.getAttributes().getLength(); a++)
                     {
                         node = childElement.getAttributes().item(a);
-                        if(node instanceof Attr)
+                        if (node instanceof Attr)
                         {
-                            Attr attribute = (Attr)node;
+                            Attr attribute = (Attr) node;
                             String attributeName = attribute.getName();
                             String attributeValue = attribute.getValue();
-                            
+
                             attributes.add(new Pair<>(attributeName, attributeValue));
                         }
                     }
-                    
+
                     EditOperation editOperation = new EditOperationImpl(operationType, attributes, text);
                     operations.add(editOperation);
                 }

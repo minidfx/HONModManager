@@ -16,7 +16,7 @@ public final class EditFileElementImpl implements EditFileElement
     {
         this.operations = operations;
         this.condition = condition;
-        
+
         this.path = path.replaceFirst("^(/?)", "");
     }
 

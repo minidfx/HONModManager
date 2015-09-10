@@ -14,7 +14,7 @@
         <ColumnConstraints hgrow="SOMETIMES" />
         <ColumnConstraints hgrow="SOMETIMES" />
         <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" />
-      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" />
+        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" />
     </columnConstraints>
     <rowConstraints>
         <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
@@ -39,6 +39,6 @@
             </GridPane.margin>
         </ImageView>
         <ImageView fx:id="icon" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true" />
-      <ProgressIndicator fx:id="updateIndicator" prefHeight="20.0" prefWidth="20.0" GridPane.columnIndex="3" />
+        <ProgressIndicator fx:id="updateIndicator" prefHeight="20.0" prefWidth="20.0" GridPane.columnIndex="3" />
     </children>
 </GridPane>

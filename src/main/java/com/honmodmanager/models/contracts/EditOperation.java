@@ -10,6 +10,8 @@ import javafx.util.Pair;
 public interface EditOperation
 {
     EditOperationType getOperationType();
+
     List<Pair<String, String>> getAttributes();
+
     String getText();
 }

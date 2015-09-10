@@ -29,8 +29,8 @@
         <Label layoutX="20.0" layoutY="194.0" text="Update" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" />
         <Hyperlink fx:id="downloadURL" layoutX="79.0" layoutY="179.0" onAction="#handleDownloadAction" text="Hyperlink" AnchorPane.bottomAnchor="56.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="0.0" />
         <Hyperlink fx:id="updateURL" layoutX="85.0" layoutY="199.0" onAction="#handleUpdateAction" text="Hyperlink" AnchorPane.bottomAnchor="36.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="0.0" />
-      <ToggleButton fx:id="enabled" layoutX="100.0" layoutY="7.0" mnemonicParsing="false" onAction="#handleEnableAction" text="Enabled" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-      <Label fx:id="errorMessage" alignment="CENTER_RIGHT" layoutX="162.0" layoutY="37.0" text="ErrorMessage" textFill="RED" textOverrun="WORD_ELLIPSIS" wrapText="true" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0" />
+        <ToggleButton fx:id="enabled" layoutX="100.0" layoutY="7.0" mnemonicParsing="false" onAction="#handleEnableAction" text="Enabled" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+        <Label fx:id="errorMessage" alignment="CENTER_RIGHT" layoutX="162.0" layoutY="37.0" text="ErrorMessage" textFill="RED" textOverrun="WORD_ELLIPSIS" wrapText="true" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0" />
     </children>
     <padding>
         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

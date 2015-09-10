@@ -350,7 +350,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
         {
             this.eventAggregator.publish(new ModEnableDisableEvent(mod));
         }
-        
+
         this.eventAggregator.publish(new ModCleanedEvent());
     }
 

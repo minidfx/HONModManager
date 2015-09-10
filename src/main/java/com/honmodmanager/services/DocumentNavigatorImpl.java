@@ -11,7 +11,7 @@ import org.w3c.dom.NodeList;
 @Service
 @Scope("singleton")
 public final class DocumentNavigatorImpl implements DocumentNavigator
-{  
+{
     @Override
     public Element getFirstElement(Element element)
     {
@@ -25,10 +25,10 @@ public final class DocumentNavigatorImpl implements DocumentNavigator
                 return (Element) node;
             }
         }
-        
+
         throw new UnsupportedOperationException("Cannot found the first element of the specified element.");
     }
-    
+
     @Override
     public Element getElement(List<Node> nodes, int index)
     {

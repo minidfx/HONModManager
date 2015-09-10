@@ -11,5 +11,6 @@ import org.w3c.dom.Node;
 public interface DocumentNavigator
 {
     Element getElement(List<Node> nodes, int index);
+
     Element getFirstElement(Element element);
 }

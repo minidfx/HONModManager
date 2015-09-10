@@ -38,7 +38,7 @@ import rx.Subscriber;
 public final class ModWriterImpl implements ModWriter
 {
     private static final Logger LOG = Logger.getLogger(ModWriterImpl.class.getName());
-    
+
     private final GameInformation gameInformation;
     private final ModReader modReader;
     private final ModSorter modSorter;
@@ -125,13 +125,13 @@ public final class ModWriterImpl implements ModWriter
                     {
                         this.zipCommentsBuilder.addMod(mod);
 
-                        try(ZipFile originalResource = new ZipFile(this.gameInformation.getOriginalResourcePath().toFile()))
+                        try (ZipFile originalResource = new ZipFile(this.gameInformation.getOriginalResourcePath().toFile()))
                         {
                             try (ZipFile zipMod = new ZipFile(mod.getFilePath().toFile()))
                             {
                                 List<Pair<String, byte[]>> copyFilesBytes = this.copyFiles(originalResource, zipMod, mod);
                                 filesBytes.addAll(copyFilesBytes);
-                                
+
                                 this.editFiles(mod, filesBytes);
                             }
                         }
@@ -151,7 +151,7 @@ public final class ModWriterImpl implements ModWriter
 
                     subscriber.onNext(true);
                     subscriber.onCompleted();
-                    
+
                     LOG.info("Mods applied.");
                 }
                 finally
@@ -193,15 +193,16 @@ public final class ModWriterImpl implements ModWriter
             if (this.conditionEvaluator.evaluate(editFileElement.getCondition()))
             {
                 final String zipEntryPath = editFileElement.getPath();
-                final Pair<String, byte[]> fileBytes = filesBytes.single(x -> x.getKey().equals(zipEntryPath));
+                final Pair<String, byte[]> fileBytes = filesBytes.single(x ->
+                        x.getKey().equals(zipEntryPath));
                 final byte[] zipEntryBytes = fileBytes.getValue();
-                
+
                 byte[] bytes = this.applyEditAction(editFileElement, zipEntryBytes);
                 Pair<String, byte[]> newPair = new Pair<>(zipEntryPath, bytes);
-                
+
                 filesBytes.remove(fileBytes);
                 filesBytes.add(newPair);
-                
+
                 LOG.info(String.format("Entry path %s edited.", zipEntryPath));
             }
         }
@@ -224,21 +225,21 @@ public final class ModWriterImpl implements ModWriter
 
                 byte[] zipEntryBytes = this.getZipEntry(zipMod, zipEntryPath);
                 filesBytes.add(new Pair<>(zipEntryPath, zipEntryBytes));
-                
+
                 LOG.info(String.format("Entry path %s copied into the additional resources zip.", zipEntryPath));
             }
         }
-        
-         for (EditFileElement editFileElement : mod.getEditElements())
+
+        for (EditFileElement editFileElement : mod.getEditElements())
         {
             if (this.conditionEvaluator.evaluate(editFileElement.getCondition()))
             {
                 final String zipEntryPath = editFileElement.getPath();
                 byte[] zipEntryBytes = this.getZipEntry(originalResource, zipEntryPath);
-                if(!filesBytes.any(x -> x.getKey().equals(zipEntryPath)))
+                if (!filesBytes.any(x -> x.getKey().equals(zipEntryPath)))
                 {
                     filesBytes.add(new Pair<>(zipEntryPath, zipEntryBytes));
-                    
+
                     LOG.info(String.format("Entry path %s copied into the additional resources zip.", zipEntryPath));
                 }
             }
@@ -266,7 +267,7 @@ public final class ModWriterImpl implements ModWriter
     private byte[] getZipEntry(ZipFile zipFile, String entryPath) throws ZipException, IOException
     {
         try (ByteArrayOutputStream bytes = new ByteArrayOutputStream())
-        {           
+        {
             ZipEntry zipEntry = zipFile.getEntry(entryPath);
             if (zipEntry == null)
                 throw new ZipException(String.format("Entry %s not found.", entryPath));
@@ -287,43 +288,47 @@ public final class ModWriterImpl implements ModWriter
     }
 
     private byte[] applyEditAction(EditFileElement editFileElement, byte[] entryBytes)
-    {      
+    {
         String entry = new String(entryBytes);
 
         int position = this.getPosition(editFileElement, entry);
         EditOperation firstOperation = editFileElement.getOperations().first();
         EditOperation secondOperation = editFileElement.getOperations().skip(1).first();
-        
-        switch(secondOperation.getOperationType())
+
+        switch (secondOperation.getOperationType())
         {
             case insert:
-                String insertPosition = secondOperation.getAttributes().single(x -> x.getKey().equals("position")).getValue();
-                if(insertPosition.equals("after"))
+                String insertPosition = secondOperation.getAttributes().single(x ->
+                        x.getKey().equals("position")).getValue();
+                if (insertPosition.equals("after"))
                 {
                     position += firstOperation.getText().length();
                 }
-                
+
                 String insert = secondOperation.getText();
-                String resourceEdited = this.insert(entry, insert, position);       
-                
+                String resourceEdited = this.insert(entry, insert, position);
+
                 return resourceEdited.getBytes();
         }
-        
+
         throw new UnsupportedOperationException("Not implemented yet.");
     }
-    
+
     private String insert(String base, String insert, int position)
     {
         String firstPart = StringUtils.substring(base, 0, position);
         String secondPart = StringUtils.substring(base, position);
-        
-        return StringUtils.join(new String[] {firstPart, insert, secondPart});
-    }    
-    
+
+        return StringUtils.join(new String[]
+        {
+            firstPart, insert, secondPart
+        });
+    }
+
     private int getPosition(EditFileElement editFileElement, String entry)
     {
         EditOperation firstOperation = editFileElement.getOperations().first();
-        
+
         switch (firstOperation.getOperationType())
         {
             case find:
@@ -331,7 +336,7 @@ public final class ModWriterImpl implements ModWriter
             case search:
                 return entry.indexOf(firstOperation.getText());
         }
-        
+
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 }

@@ -23,7 +23,7 @@ public final class EditOperationImpl implements EditOperation
     {
         return this.attributes;
     }
-    
+
     @Override
     public EditOperationType getOperationType()
     {
@@ -34,5 +34,5 @@ public final class EditOperationImpl implements EditOperation
     public String getText()
     {
         return this.text;
-    }   
+    }
 }

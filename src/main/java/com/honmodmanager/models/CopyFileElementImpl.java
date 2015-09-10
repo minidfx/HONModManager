@@ -12,7 +12,7 @@ public final class CopyFileElementImpl implements CopyFileElement
     {
         this.condition = condition;
         this.overwrite = overwrite;
-        
+
         this.path = path.replaceFirst("^(/?)", "");
     }
 

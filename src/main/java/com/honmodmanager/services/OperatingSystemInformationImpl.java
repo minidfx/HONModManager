@@ -17,11 +17,11 @@ public final class OperatingSystemInformationImpl implements OperatingSystemInfo
     @Override
     public OperatingSystem getOperatingSystem()
     {
-        if(this.operatingSystem != null)
+        if (this.operatingSystem != null)
         {
             return this.operatingSystem;
         }
-        
+
         String operatingSystemName = System.getProperty("os.name").trim();
 
         if (operatingSystemName.equals("Mac OS X"))

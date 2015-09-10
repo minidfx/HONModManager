@@ -52,7 +52,7 @@ public final class ModManagerImpl implements ModManager
         }
 
         File newMod = path.toFile();
-        
+
         // FIXME: Display an error message when the access to the mod folder is denied.
         FileUtils.copyFileToDirectory(newMod, targetDirectory, true);
     }
@@ -67,15 +67,15 @@ public final class ModManagerImpl implements ModManager
     public Observable<Mod> getAll()
     {
         File modsFolders = this.gameInformation.getModsFolder().toFile();
-        if(!modsFolders.exists())
+        if (!modsFolders.exists())
         {
             // FIXME: Display an error message because we need the rights access for Windows to create the mods folder.
-            if(!modsFolders.mkdirs())
+            if (!modsFolders.mkdirs())
             {
                 throw new UnsupportedOperationException("Cannot create the mod folder.");
             }
         }
-        
+
         return this.modReader.getMods();
     }
 

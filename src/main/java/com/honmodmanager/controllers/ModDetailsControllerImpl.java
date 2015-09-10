@@ -42,7 +42,7 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
     private EventAggregatorHandler<ModCleanedEvent> modCleanedEvent;
     private EventAggregatorHandler<ModUpdatingEvent> modUpdatingEvent;
     private EventAggregatorHandler<ModUpdatedEvent> modUpdatedEvent;
-    
+
     private final Mod model;
     private final PlatformInteraction platformInteraction;
     private final EventAggregator eventAggregator;
@@ -141,7 +141,7 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
             @Override
             public void handleEvent(ModUpdatedEvent event)
             {
-                if(event.getMod().equals(mainInstance.model))
+                if (event.getMod().equals(mainInstance.model))
                 {
                     mainInstance.executeOnUIThread(() ->
                     {
@@ -150,19 +150,19 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
                 }
             }
         };
-        
+
         this.modUpdatingEvent = new EventAggregatorHandler<ModUpdatingEvent>()
         {
             @Override
             public void handleEvent(ModUpdatingEvent event)
             {
-                if(event.getMod().equals(mainInstance.model))
+                if (event.getMod().equals(mainInstance.model))
                 {
                     mainInstance.updateButton.setDisable(true);
                 }
             }
         };
-        
+
         this.modCleanedEvent = new EventAggregatorHandler<ModCleanedEvent>()
         {
             @Override
@@ -191,7 +191,7 @@ public final class ModDetailsControllerImpl extends FXmlControllerBase implement
 
         this.internetConnectionObservable.unsubscribe();
     }
-    
+
     private void refresh()
     {
         this.title.setText(this.model.getName());
