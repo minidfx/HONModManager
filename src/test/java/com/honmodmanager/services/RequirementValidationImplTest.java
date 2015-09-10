@@ -4,6 +4,7 @@ import com.honmodmanager.models.RequirementImpl;
 import com.honmodmanager.models.VersionImpl;
 import com.honmodmanager.models.contracts.Version;
 import junit.framework.TestCase;
+import org.junit.Assert;
 
 /**
  *
@@ -46,7 +47,7 @@ public final class RequirementValidationImplTest extends TestCase
 
         for (Version valiVersion : validVersions)
         {
-            assertTrue(this.instance.isValid(valiVersion, this.fakeRequirement));
+            Assert.assertTrue(this.instance.isValid(valiVersion, this.fakeRequirement));
         }
     }
 
@@ -60,7 +61,7 @@ public final class RequirementValidationImplTest extends TestCase
 
         for (Version invalidVersion : invalidVersions)
         {
-            assertFalse(this.instance.isValid(invalidVersion, this.fakeRequirement));
+            Assert.assertFalse(this.instance.isValid(invalidVersion, this.fakeRequirement));
         }
     }
 }

@@ -2,6 +2,7 @@ package com.honmodmanager.models;
 
 import com.honmodmanager.models.contracts.Version;
 import junit.framework.TestCase;
+import org.junit.Assert;
 
 /**
  *
@@ -32,40 +33,40 @@ public final class VersionImplTest extends TestCase
 
     public void testGetMajor()
     {
-        assertEquals(1, this.instance.getMajor());
+        Assert.assertEquals(1, this.instance.getMajor());
     }
 
     public void testGetMinor()
     {
-        assertEquals(2, this.instance.getMinor());
+        Assert.assertEquals(2, this.instance.getMinor());
     }
 
     public void testGetFix()
     {
-        assertEquals(3, this.instance.getFix());
+        Assert.assertEquals(3, this.instance.getFix());
     }
 
     public void testGetBuild()
     {
-        assertEquals(4, this.instance.getBuild());
+        Assert.assertEquals(4, this.instance.getBuild());
     }
 
     public void testToString()
     {
         String expectedValue = "1.2.3.4";
-        assertEquals(expectedValue, this.instance.toString());
+        Assert.assertEquals(expectedValue, this.instance.toString());
     }
 
     public void testGreaterThan_with_smaller_version_returing_true()
     {
         Version smallerVersion = new VersionImpl(1, 0, 0, 0);
-        assertTrue(this.instance.greaterThan(smallerVersion));
+        Assert.assertTrue(this.instance.greaterThan(smallerVersion));
     }
 
     public void testGreaterThan_with_same_version_returing_false()
     {
         Version smallerVersion = new VersionImpl(1, 2, 3, 4);
-        assertFalse(this.instance.greaterThan(smallerVersion));
+        Assert.assertFalse(this.instance.greaterThan(smallerVersion));
     }
 
     public void testGreaterThan_with_higher_version_returing_false()
@@ -81,20 +82,20 @@ public final class VersionImplTest extends TestCase
 
         for (Version version : smallerVersions)
         {
-            assertFalse(String.format("%s > %s", this.instance, version), this.instance.greaterThan(version));
+            Assert.assertFalse(String.format("%s > %s", this.instance, version), this.instance.greaterThan(version));
         }
     }
 
     public void testLowerThan_with_higher_version_returning_true()
     {
         Version higherVersion = new VersionImpl(2, 0, 0, 0);
-        assertTrue(this.instance.lowerThan(higherVersion));
+        Assert.assertTrue(this.instance.lowerThan(higherVersion));
     }
 
     public void testLowerThan_with_same_version_returning_false()
     {
         Version smallerVersion = new VersionImpl(1, 2, 3, 4);
-        assertFalse(this.instance.lowerThan(smallerVersion));
+        Assert.assertFalse(this.instance.lowerThan(smallerVersion));
     }
 
     public void testLowerThan_with_smaller_version_returning_false()
@@ -108,25 +109,25 @@ public final class VersionImplTest extends TestCase
 
         for (Version version : smallerVersions)
         {
-            assertFalse(String.format("%s > %s", this.instance, version), this.instance.lowerThan(version));
+            Assert.assertFalse(String.format("%s > %s", this.instance, version), this.instance.lowerThan(version));
         }
     }
 
     public void testIsSame()
     {
         Version aVersion = new VersionImpl(1, 2, 3, 4);
-        assertTrue(this.instance.isSame(aVersion));
+        Assert.assertTrue(this.instance.isSame(aVersion));
     }
 
     public void testIsSame_with_instance_version_and_version_passed_as_null()
     {
         Version nullVersion = new VersionImpl(0, 0, 0, 0);
-        assertTrue(this.instance.isSame(nullVersion));
+        Assert.assertTrue(this.instance.isSame(nullVersion));
     }
 
     public void testIsSame_with_tested_version_as_null()
     {
         Version primaryVersion = new VersionImpl(0, 0, 0, 0);
-        assertTrue(primaryVersion.isSame(this.instance));
+        Assert.assertTrue(primaryVersion.isSame(this.instance));
     }
 }

@@ -1,6 +1,7 @@
 package com.honmodmanager.services;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 
 /**
  *
@@ -33,6 +34,6 @@ public final class ConditionEvaluatorImplTest extends TestCase
     {
         boolean result = this.instance.evaluate("");
 
-        assertTrue(result);
+        Assert.assertTrue(result);
     }
 }
