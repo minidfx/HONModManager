@@ -92,14 +92,14 @@ public final class ModSorterImpl implements ModSorter
 
         throw new ModSortException("Cannot found the mod 'before'.");
     }
-      
+
     private List<Mod> insertBefore(List<Mod> mods, Mod mod, int index)
     {
         List<Mod> out = mods.toList();
-        
+
         out.remove(mod);
         out.add(index, mod);
-        
+
         return out;
     }
 
@@ -110,7 +110,7 @@ public final class ModSorterImpl implements ModSorter
             Mod currentMod = mods.get(i);
             if (currentMod.getId().equals(after.getId()))
             {
-                return this.insertAfter(mods, insert, i+1);
+                return this.insertAfter(mods, insert, i + 1);
             }
         }
 

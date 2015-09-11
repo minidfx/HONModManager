@@ -139,8 +139,8 @@ public final class ModWriterImpl implements ModWriter
                                 this.zipCommentsBuilder.addMod(mod);
 
                                 Dictionary<String, byte[]> files = this.copyFiles(originalResource, zipMod, mod);
-                                
-                                for(Entry<String, byte[]> file : files)
+
+                                for (Entry<String, byte[]> file : files)
                                 {
                                     filesBytes.put(file.getKey(), file.getValue());
                                 }
@@ -208,8 +208,8 @@ public final class ModWriterImpl implements ModWriter
             if (this.conditionEvaluator.evaluate(editFileElement.getCondition()))
             {
                 final String zipEntryPath = editFileElement.getPath();
-                final Entry<String, byte[]> fileBytes = filesBytes.single(x
-                        -> x.getKey().equals(zipEntryPath));
+                final Entry<String, byte[]> fileBytes = filesBytes.single(x ->
+                        x.getKey().equals(zipEntryPath));
                 final byte[] zipEntryBytes = fileBytes.getValue();
 
                 byte[] bytes = this.applyEditOperations(editFileElement, zipEntryBytes);
@@ -233,8 +233,8 @@ public final class ModWriterImpl implements ModWriter
                 final String zipEntryPath = copyFileElement.getPath();
                 if (filesBytes.any(x -> x.getKey().equals(zipEntryPath)) && copyFileElement.overwrite())
                 {
-                    filesBytes.remove(filesBytes.single(x
-                            -> x.getKey().equals(zipEntryPath)));
+                    filesBytes.remove(filesBytes.single(x ->
+                            x.getKey().equals(zipEntryPath)));
                 }
 
                 byte[] zipEntryBytes = this.getZipEntry(zipMod, zipEntryPath);
@@ -365,7 +365,8 @@ public final class ModWriterImpl implements ModWriter
             throw new ApplyModException("A search operation is mandatory to insert a text.");
         }
 
-        String insertPosition = operation.getAttributes().single(x -> x.getKey().equals("position")).getValue();
+        String insertPosition = operation.getAttributes().single(x ->
+                x.getKey().equals("position")).getValue();
         if (insertPosition.equals("after"))
         {
             lastPositionFound += findElementLength;
