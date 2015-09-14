@@ -138,8 +138,7 @@ public final class ModWriterImpl implements ModWriter
                             {
                                 this.zipCommentsBuilder.addMod(mod);
 
-                                Dictionary<String, byte[]> files = this.copyFiles(originalResource, zipMod, mod);
-
+                                Dictionary<String, byte[]> files = this.copyFiles(originalResource, zipMod, mod, sortedMods);
                                 for (Entry<String, byte[]> file : files)
                                 {
                                     filesBytes.put(file.getKey(), file.getValue());
@@ -149,7 +148,7 @@ public final class ModWriterImpl implements ModWriter
 
                         for (Mod mod : sortedMods)
                         {
-                            this.editFiles(mod, filesBytes);
+                            this.editFiles(mod, sortedMods, filesBytes);
                         }
                     }
 
@@ -201,11 +200,11 @@ public final class ModWriterImpl implements ModWriter
         }
     }
 
-    private void editFiles(Mod mod, Dictionary<String, byte[]> filesBytes) throws IOException, ApplyModException
+    private void editFiles(Mod mod, IEnumerable<Mod> enabledMods, Dictionary<String, byte[]> filesBytes) throws IOException, ApplyModException
     {
         for (EditFileElement editFileElement : mod.getEditElements())
         {
-            if (this.conditionEvaluator.evaluate(editFileElement.getCondition()))
+            if (this.conditionEvaluator.evaluate(editFileElement.getCondition(), enabledMods))
             {
                 final String zipEntryPath = editFileElement.getPath();
                 final Entry<String, byte[]> fileBytes = filesBytes.single(x ->
@@ -222,13 +221,13 @@ public final class ModWriterImpl implements ModWriter
         }
     }
 
-    private Dictionary<String, byte[]> copyFiles(ZipFile originalResource, ZipFile zipMod, Mod mod) throws IOException
+    private Dictionary<String, byte[]> copyFiles(ZipFile originalResource, ZipFile zipMod, Mod mod, IEnumerable<Mod> enabledMods) throws IOException
     {
         Dictionary<String, byte[]> filesBytes = new Dictionary<>();
 
         for (CopyFileElement copyFileElement : mod.getCopyElements())
         {
-            if (this.conditionEvaluator.evaluate(copyFileElement.getCondition()))
+            if (this.conditionEvaluator.evaluate(copyFileElement.getCondition(), enabledMods))
             {
                 final String zipEntryPath = copyFileElement.getPath();
                 if (filesBytes.any(x -> x.getKey().equals(zipEntryPath)) && copyFileElement.overwrite())
@@ -246,7 +245,7 @@ public final class ModWriterImpl implements ModWriter
 
         for (EditFileElement editFileElement : mod.getEditElements())
         {
-            if (this.conditionEvaluator.evaluate(editFileElement.getCondition()))
+            if (this.conditionEvaluator.evaluate(editFileElement.getCondition(), null))
             {
                 final String zipEntryPath = editFileElement.getPath();
                 byte[] zipEntryBytes = this.getZipEntry(originalResource, zipEntryPath);

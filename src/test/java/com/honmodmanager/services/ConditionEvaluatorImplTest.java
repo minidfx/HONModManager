@@ -32,7 +32,14 @@ public final class ConditionEvaluatorImplTest extends TestCase
 
     public void test_evaluate_with_empty_condition()
     {
-        boolean result = this.instance.evaluate("");
+        boolean result = this.instance.evaluate("", null);
+
+        Assert.assertTrue(result);
+    }
+
+    public void test_evaluate_with_simple_condition()
+    {
+        boolean result = this.instance.evaluate("mod1", null);
 
         Assert.assertTrue(result);
     }
