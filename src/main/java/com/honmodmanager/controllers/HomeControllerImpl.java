@@ -341,7 +341,7 @@ public final class HomeControllerImpl extends FXmlControllerBase implements Home
     }
 
     @FXML
-    private void handleCleanAction(ActionEvent event)
+    private void handleCleanAction(ActionEvent event) throws IOException
     {
         this.modManager.clean();
 

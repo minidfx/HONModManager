@@ -86,7 +86,7 @@ public final class ModManagerImpl implements ModManager
     }
 
     @Override
-    public void clean()
+    public void clean() throws IOException
     {
         for (Mod mod : this.modReader.getCachedMods())
         {
@@ -96,7 +96,10 @@ public final class ModManagerImpl implements ModManager
         File additionalResource = this.gameInformation.getAdditonalResourcePath().toFile();
         if (additionalResource.exists())
         {
-            additionalResource.delete();
+            if(!additionalResource.delete())
+            {
+                throw new IOException("Cannot delete the additionnal resources.");
+            }
         }
     }
 }

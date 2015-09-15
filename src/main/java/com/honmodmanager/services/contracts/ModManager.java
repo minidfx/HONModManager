@@ -23,5 +23,5 @@ public interface ModManager
 
     List<Mod> getCached();
 
-    void clean();
+    void clean() throws IOException;
 }
