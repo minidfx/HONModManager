@@ -204,7 +204,7 @@ public final class ModWriterImpl implements ModWriter
     {
         for (EditFileElement editFileElement : mod.getEditElements())
         {
-            if (this.conditionEvaluator.evaluate(editFileElement.getCondition(), enabledMods))
+            if (this.conditionEvaluator.evaluate(editFileElement, enabledMods))
             {
                 final String zipEntryPath = editFileElement.getPath();
                 final Entry<String, byte[]> fileBytes = filesBytes.single(x ->
@@ -227,7 +227,7 @@ public final class ModWriterImpl implements ModWriter
 
         for (CopyFileElement copyFileElement : mod.getCopyElements())
         {
-            if (this.conditionEvaluator.evaluate(copyFileElement.getCondition(), enabledMods))
+            if (this.conditionEvaluator.evaluate(copyFileElement, enabledMods))
             {
                 final String zipEntryPath = copyFileElement.getPath();
                 if (filesBytes.any(x -> x.getKey().equals(zipEntryPath)) && copyFileElement.overwrite())
@@ -245,7 +245,7 @@ public final class ModWriterImpl implements ModWriter
 
         for (EditFileElement editFileElement : mod.getEditElements())
         {
-            if (this.conditionEvaluator.evaluate(editFileElement.getCondition(), null))
+            if (this.conditionEvaluator.evaluate(editFileElement, enabledMods))
             {
                 final String zipEntryPath = editFileElement.getPath();
                 byte[] zipEntryBytes = this.getZipEntry(originalResource, zipEntryPath);

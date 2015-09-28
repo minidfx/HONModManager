@@ -1,6 +1,9 @@
 package com.honmodmanager.services;
 
 import com.github.jlinqer.linq.IEnumerable;
+import com.honmodmanager.models.ConditionElement;
+import com.honmodmanager.models.contracts.CopyFileElement;
+import com.honmodmanager.models.contracts.EditFileElement;
 import com.honmodmanager.models.contracts.Mod;
 import com.honmodmanager.services.contracts.ConditionEvaluator;
 import org.springframework.context.annotation.Scope;
@@ -11,9 +14,9 @@ import org.springframework.stereotype.Service;
 public final class ConditionEvaluatorImpl implements ConditionEvaluator
 {
     @Override
-    public boolean evaluate(String condition, IEnumerable<Mod> enabledMods)
+    public boolean evaluate(ConditionElement conditionElement, IEnumerable<Mod> enabledMods)
     {
-        String conditionTrimmed = condition.trim();
+        String conditionTrimmed = conditionElement.getCondition();
         Mod[] mods = enabledMods.toArray(Mod.class);
 
         if (conditionTrimmed.isEmpty())
@@ -21,15 +24,14 @@ public final class ConditionEvaluatorImpl implements ConditionEvaluator
 
         if (conditionTrimmed.startsWith("not"))
         {
-            return this.evaluateNegativeCondition(condition);
+            return this.evaluateNegativeCondition(conditionTrimmed);
         }
 
-        return this.evaluatePositiveCondition(condition);
+        return this.evaluatePositiveCondition(conditionTrimmed);
     }
 
     private boolean evaluateNegativeCondition(String condition)
     {
-
         return true;
     }
 

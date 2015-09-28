@@ -1,6 +1,7 @@
 package com.honmodmanager.services.contracts;
 
 import com.github.jlinqer.linq.IEnumerable;
+import com.honmodmanager.models.ConditionElement;
 import com.honmodmanager.models.contracts.Mod;
 
 /**
@@ -9,5 +10,5 @@ import com.honmodmanager.models.contracts.Mod;
  */
 public interface ConditionEvaluator
 {
-    boolean evaluate(String condition, IEnumerable<Mod> mods);
+    boolean evaluate(ConditionElement editFileElement, IEnumerable<Mod> mods);
 }
