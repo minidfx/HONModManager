@@ -1,5 +1,11 @@
 package com.honmodmanager.services;
 
+import com.github.jlinqer.collections.List;
+import com.github.jlinqer.linq.IEnumerable;
+import com.honmodmanager.models.ModImpl;
+import com.honmodmanager.models.VersionImpl;
+import com.honmodmanager.models.contracts.Mod;
+import com.honmodmanager.models.contracts.Version;
 import junit.framework.TestCase;
 import org.junit.Assert;
 
@@ -32,14 +38,24 @@ public final class ConditionEvaluatorImplTest extends TestCase
 
     public void test_evaluate_with_empty_condition()
     {
-        boolean result = this.instance.evaluate("", null);
+        Version versionStub = new VersionImpl();
+        Mod modStub1 = new ModImpl("stub1", versionStub, true);
+
+        IEnumerable<Mod> mods = new List<>(modStub1);
+
+        boolean result = this.instance.evaluate(modStub1.getEditElements().first(), mods);
 
         Assert.assertTrue(result);
     }
 
     public void test_evaluate_with_simple_condition()
     {
-        boolean result = this.instance.evaluate("mod1", null);
+        Version versionStub = new VersionImpl();
+        Mod modStub1 = new ModImpl("stub1", versionStub, true);
+
+        IEnumerable<Mod> mods = new List<>(modStub1);
+
+        boolean result = this.instance.evaluate(modStub1.getEditElements().first(), mods);
 
         Assert.assertTrue(result);
     }
