@@ -4,5 +4,3 @@ jdk:
 script:
   - mvn clean install -U
   - mvn test
-notifications:
-  slack: imateapot:IabXrqhki57VSUosaHB2ylcl
